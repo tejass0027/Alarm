@@ -11,7 +11,7 @@ in phases:
 2. Alarm cards (time, stake badge, repeat days, toggle, edit/delete) — done
 3. Add/edit alarm modal — done
 4. Ringing/challenge screen — done
-5. Polish pass
+5. Polish pass — done
 
 Icons are hand-inlined to match the `lucide-react` API (`size`, `strokeWidth`, `className`
 props) so the file runs standalone. Dropping this into a real React project just means

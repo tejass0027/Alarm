@@ -33,6 +33,25 @@
   body { background: #08070F; }
   ::selection { background: #8B5CF6; color: #08070F; }
   .tabular { font-variant-numeric: tabular-nums; }
+  .focus-ring:focus-visible {
+    outline: 2px solid #8B5CF6;
+    outline-offset: 2px;
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .animate-fade-in-up { animation: fadeInUp 0.35s ease-out both; }
+  .animate-modal-in { animation: modalIn 0.2s ease-out both; }
+  @media (prefers-reduced-motion: reduce) {
+    .animate-fade-in-up, .animate-modal-in, .animate-pulse {
+      animation: none !important;
+    }
+  }
 </style>
 
 <div id="root"></div>
@@ -167,10 +186,13 @@ function generateChallenge(type) {
   };
 }
 
-function AlarmCard({ alarm, onToggle, onDelete, onEdit, onRing }) {
+function AlarmCard({ alarm, onToggle, onDelete, onEdit, onRing, style }) {
   const hasRepeat = alarm.days.length > 0;
   return (
-    <div className="rounded-2xl border border-edge bg-surface p-5 hover:border-accent/40 hover:scale-[1.01] transition-all duration-200">
+    <div
+      style={style}
+      className="animate-fade-in-up rounded-2xl border border-edge bg-surface p-5 hover:border-accent/40 hover:scale-[1.01] transition-all duration-200"
+    >
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="font-display tabular text-3xl font-semibold text-paper">{alarm.time}</p>
@@ -182,7 +204,7 @@ function AlarmCard({ alarm, onToggle, onDelete, onEdit, onRing }) {
           aria-checked={alarm.enabled}
           aria-label={alarm.enabled ? 'Disable alarm' : 'Enable alarm'}
           onClick={() => onToggle(alarm.id)}
-          className={`w-11 h-6 rounded-full border transition-colors duration-200 relative shrink-0 ${
+          className={`focus-ring w-11 h-6 rounded-full border transition-colors duration-200 relative shrink-0 ${
             alarm.enabled ? 'bg-accent border-accent' : 'bg-surface2 border-edge'
           }`}
         >
@@ -221,7 +243,7 @@ function AlarmCard({ alarm, onToggle, onDelete, onEdit, onRing }) {
           type="button"
           aria-label="Edit alarm"
           onClick={onEdit}
-          className="w-8 h-8 rounded-lg flex items-center justify-center text-ink3 hover:text-accent2 hover:bg-surface2 transition-colors duration-200"
+          className="focus-ring w-8 h-8 rounded-lg flex items-center justify-center text-ink3 hover:text-accent2 hover:bg-surface2 transition-colors duration-200"
         >
           <Pencil size={15} />
         </button>
@@ -229,14 +251,14 @@ function AlarmCard({ alarm, onToggle, onDelete, onEdit, onRing }) {
           type="button"
           aria-label="Delete alarm"
           onClick={() => onDelete(alarm.id)}
-          className="w-8 h-8 rounded-lg flex items-center justify-center text-ink3 hover:text-stake hover:bg-surface2 transition-colors duration-200"
+          className="focus-ring w-8 h-8 rounded-lg flex items-center justify-center text-ink3 hover:text-stake hover:bg-surface2 transition-colors duration-200"
         >
           <Trash2 size={15} />
         </button>
         <button
           type="button"
           onClick={onRing}
-          className="ml-auto flex items-center gap-1.5 rounded-full bg-surface2 text-ink2 text-xs font-medium px-3 py-1.5 hover:text-accent2 hover:bg-accent/10 transition-colors duration-200"
+          className="focus-ring ml-auto flex items-center gap-1.5 rounded-full bg-surface2 text-ink2 text-xs font-medium px-3 py-1.5 hover:text-accent2 hover:bg-accent/10 transition-colors duration-200"
         >
           <Bell size={13} />
           Preview
@@ -285,7 +307,7 @@ function AlarmModal({ existing, onClose, onSave }) {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-2xl border border-edge bg-surface p-6"
+        className="animate-modal-in w-full max-w-md rounded-2xl border border-edge bg-surface p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-5">
@@ -296,7 +318,7 @@ function AlarmModal({ existing, onClose, onSave }) {
             type="button"
             aria-label="Close"
             onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-ink3 hover:text-paper hover:bg-surface2 transition-colors duration-200"
+            className="focus-ring w-8 h-8 rounded-lg flex items-center justify-center text-ink3 hover:text-paper hover:bg-surface2 transition-colors duration-200"
           >
             <X size={16} />
           </button>
@@ -349,7 +371,7 @@ function AlarmModal({ existing, onClose, onSave }) {
                   key={i}
                   type="button"
                   onClick={() => toggleDay(i)}
-                  className={`w-8 h-8 rounded-full text-xs font-medium transition-colors duration-200 ${
+                  className={`focus-ring w-8 h-8 rounded-full text-xs font-medium transition-colors duration-200 ${
                     days.includes(i) ? 'bg-accent text-ink' : 'bg-surface2 text-ink3 hover:text-ink2'
                   }`}
                 >
@@ -368,7 +390,7 @@ function AlarmModal({ existing, onClose, onSave }) {
                   key={c.value}
                   type="button"
                   onClick={() => setChallengeType(c.value)}
-                  className={`rounded-lg py-1.5 text-xs font-medium transition-colors duration-200 border ${
+                  className={`focus-ring rounded-lg py-1.5 text-xs font-medium transition-colors duration-200 border ${
                     challengeType === c.value
                       ? 'bg-accent/20 text-accent2 border-accent/40'
                       : 'bg-surface2 text-ink3 border-transparent hover:text-ink2'
@@ -385,14 +407,14 @@ function AlarmModal({ existing, onClose, onSave }) {
           <div className="flex items-center gap-2 mt-2">
             <button
               type="submit"
-              className="flex-1 rounded-full bg-accent text-ink font-medium text-sm py-2.5 hover:bg-accent2 hover:scale-105 transition-all duration-200"
+              className="focus-ring flex-1 rounded-full bg-accent text-ink font-medium text-sm py-2.5 hover:bg-accent2 hover:scale-105 transition-all duration-200"
             >
               Save alarm
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full border border-edge text-ink2 font-medium text-sm px-5 py-2.5 hover:text-paper hover:border-ink3 transition-colors duration-200"
+              className="focus-ring rounded-full border border-edge text-ink2 font-medium text-sm px-5 py-2.5 hover:text-paper hover:border-ink3 transition-colors duration-200"
             >
               Cancel
             </button>
@@ -475,7 +497,7 @@ function RingingScreen({ alarm, onResolve }) {
           )}
           <button
             type="submit"
-            className="w-full rounded-full bg-accent text-ink font-medium text-sm py-2.5 mt-4 hover:bg-accent2 hover:scale-105 transition-all duration-200"
+            className="focus-ring w-full rounded-full bg-accent text-ink font-medium text-sm py-2.5 mt-4 hover:bg-accent2 hover:scale-105 transition-all duration-200"
           >
             Submit
           </button>
@@ -487,14 +509,14 @@ function RingingScreen({ alarm, onResolve }) {
               <button
                 type="button"
                 onClick={() => onResolve('gave_up')}
-                className="rounded-full bg-stake text-ink text-xs font-medium px-4 py-2 hover:scale-105 transition-all duration-200"
+                className="focus-ring rounded-full bg-stake text-ink text-xs font-medium px-4 py-2 hover:scale-105 transition-all duration-200"
               >
                 Confirm — lose ${alarm.stake}
               </button>
               <button
                 type="button"
                 onClick={() => setConfirmingGiveUp(false)}
-                className="text-ink3 text-xs hover:text-ink2 transition-colors duration-200"
+                className="focus-ring text-ink3 text-xs hover:text-ink2 transition-colors duration-200"
               >
                 Cancel
               </button>
@@ -503,7 +525,7 @@ function RingingScreen({ alarm, onResolve }) {
             <button
               type="button"
               onClick={() => setConfirmingGiveUp(true)}
-              className="text-stake/80 text-xs hover:text-stake transition-colors duration-200"
+              className="focus-ring text-stake/80 text-xs hover:text-stake transition-colors duration-200"
             >
               Give up (lose stake)
             </button>
@@ -586,7 +608,7 @@ function App() {
             <button
               type="button"
               aria-label="Settings"
-              className="w-9 h-9 rounded-full border border-edge flex items-center justify-center text-ink2 hover:text-paper hover:border-ink3 transition-colors duration-200"
+              className="focus-ring w-9 h-9 rounded-full border border-edge flex items-center justify-center text-ink2 hover:text-paper hover:border-ink3 transition-colors duration-200"
             >
               <Settings size={17} />
             </button>
@@ -609,7 +631,7 @@ function App() {
               <button
                 type="button"
                 onClick={() => setBalance((b) => b + 50)}
-                className="rounded-full bg-accent text-ink font-medium text-sm px-5 py-2.5 hover:bg-accent2 hover:scale-105 transition-all duration-200"
+                className="focus-ring rounded-full bg-accent text-ink font-medium text-sm px-5 py-2.5 hover:bg-accent2 hover:scale-105 transition-all duration-200"
               >
                 Deposit funds
               </button>
@@ -641,7 +663,7 @@ function App() {
             <button
               type="button"
               onClick={openAddModal}
-              className="flex items-center gap-1.5 rounded-full bg-accent/15 border border-accent/30 text-accent2 text-xs font-medium px-3.5 py-1.5 hover:bg-accent/25 hover:scale-105 transition-all duration-200"
+              className="focus-ring flex items-center gap-1.5 rounded-full bg-accent/15 border border-accent/30 text-accent2 text-xs font-medium px-3.5 py-1.5 hover:bg-accent/25 hover:scale-105 transition-all duration-200"
             >
               <Plus size={13} strokeWidth={2.2} />
               Add alarm
@@ -651,10 +673,11 @@ function App() {
             <p className="text-ink3 text-sm mt-4">No alarms yet — add your first one.</p>
           ) : (
             <div className="grid sm:grid-cols-2 gap-4 mt-4">
-              {alarms.map((alarm) => (
+              {alarms.map((alarm, i) => (
                 <AlarmCard
                   key={alarm.id}
                   alarm={alarm}
+                  style={{ animationDelay: `${i * 60}ms` }}
                   onToggle={toggleAlarm}
                   onDelete={deleteAlarm}
                   onEdit={() => openEditModal(alarm)}
