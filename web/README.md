@@ -9,7 +9,7 @@ in phases:
 
 1. Theme, top bar, and dashboard shell (balance card + stats) — done
 2. Alarm cards (time, stake badge, repeat days, toggle, edit/delete) — done
-3. Add/edit alarm modal
+3. Add/edit alarm modal — done
 4. Ringing/challenge screen
 5. Polish pass
 

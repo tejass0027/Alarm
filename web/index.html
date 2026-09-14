@@ -111,10 +111,27 @@ const Trash2 = (p) => (
     <line x1="14" y1="11" x2="14" y2="17" />
   </Icon>
 );
+const X = (p) => (
+  <Icon {...p}>
+    <path d="M18 6 6 18" />
+    <path d="m6 6 12 12" />
+  </Icon>
+);
+const Plus = (p) => (
+  <Icon {...p}>
+    <path d="M5 12h14" />
+    <path d="M12 5v14" />
+  </Icon>
+);
 
 const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+const CHALLENGE_TYPES = [
+  { value: 'random', label: 'Random' },
+  { value: 'math', label: 'Math' },
+  { value: 'typing', label: 'Typing' }
+];
 
-function AlarmCard({ alarm, onToggle, onDelete }) {
+function AlarmCard({ alarm, onToggle, onDelete, onEdit }) {
   const hasRepeat = alarm.days.length > 0;
   return (
     <div className="rounded-2xl border border-edge bg-surface p-5 hover:border-accent/40 hover:scale-[1.01] transition-all duration-200">
@@ -167,6 +184,7 @@ function AlarmCard({ alarm, onToggle, onDelete }) {
         <button
           type="button"
           aria-label="Edit alarm"
+          onClick={onEdit}
           className="w-8 h-8 rounded-lg flex items-center justify-center text-ink3 hover:text-accent2 hover:bg-surface2 transition-colors duration-200"
         >
           <Pencil size={15} />
@@ -184,6 +202,163 @@ function AlarmCard({ alarm, onToggle, onDelete }) {
   );
 }
 
+function AlarmModal({ existing, onClose, onSave }) {
+  const [time, setTime] = useState(existing?.time ?? '07:00');
+  const [label, setLabel] = useState(existing?.label ?? '');
+  const [stake, setStake] = useState(existing ? String(existing.stake) : '5');
+  const [days, setDays] = useState(existing?.days ?? []);
+  const [challengeType, setChallengeType] = useState(existing?.challengeType ?? 'random');
+  const [error, setError] = useState('');
+
+  const toggleDay = (i) =>
+    setDays((prev) => (prev.includes(i) ? prev.filter((d) => d !== i) : [...prev, i].sort()));
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const stakeNumber = Number(stake);
+    if (!time) {
+      setError('Pick a time for the alarm.');
+      return;
+    }
+    if (!stakeNumber || stakeNumber <= 0) {
+      setError('Stake must be greater than $0.');
+      return;
+    }
+    onSave({
+      id: existing?.id ?? Date.now(),
+      enabled: existing?.enabled ?? true,
+      time,
+      label: label.trim(),
+      stake: stakeNumber,
+      days,
+      challengeType
+    });
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md rounded-2xl border border-edge bg-surface p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="font-display text-lg font-semibold text-paper">
+            {existing ? 'Edit alarm' : 'New alarm'}
+          </h3>
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={onClose}
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-ink3 hover:text-paper hover:bg-surface2 transition-colors duration-200"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div className="flex gap-3">
+            <label className="flex-1">
+              <span className="block text-xs text-ink2 mb-1.5">Time</span>
+              <input
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                style={{ colorScheme: 'dark' }}
+                className="w-full rounded-lg bg-surface2 border border-edge px-3 py-2 text-sm text-paper focus:outline-none focus:border-accent transition-colors duration-200"
+              />
+            </label>
+            <label className="flex-1">
+              <span className="block text-xs text-ink2 mb-1.5">Stake</span>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink3 text-sm">$</span>
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={stake}
+                  onChange={(e) => setStake(e.target.value)}
+                  className="w-full rounded-lg bg-surface2 border border-edge pl-6 pr-3 py-2 text-sm text-paper focus:outline-none focus:border-accent transition-colors duration-200"
+                />
+              </div>
+            </label>
+          </div>
+
+          <label>
+            <span className="block text-xs text-ink2 mb-1.5">Label</span>
+            <input
+              type="text"
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              placeholder="Gym before work"
+              className="w-full rounded-lg bg-surface2 border border-edge px-3 py-2 text-sm text-paper placeholder:text-ink3/60 focus:outline-none focus:border-accent transition-colors duration-200"
+            />
+          </label>
+
+          <div>
+            <span className="block text-xs text-ink2 mb-1.5">Repeat on</span>
+            <div className="flex items-center gap-1.5">
+              {DAY_LABELS.map((d, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => toggleDay(i)}
+                  className={`w-8 h-8 rounded-full text-xs font-medium transition-colors duration-200 ${
+                    days.includes(i) ? 'bg-accent text-ink' : 'bg-surface2 text-ink3 hover:text-ink2'
+                  }`}
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
+            <p className="text-ink3 text-[11px] mt-1.5">Leave all unselected for a one-time alarm.</p>
+          </div>
+
+          <div>
+            <span className="block text-xs text-ink2 mb-1.5">Challenge</span>
+            <div className="grid grid-cols-3 gap-1.5">
+              {CHALLENGE_TYPES.map((c) => (
+                <button
+                  key={c.value}
+                  type="button"
+                  onClick={() => setChallengeType(c.value)}
+                  className={`rounded-lg py-1.5 text-xs font-medium transition-colors duration-200 border ${
+                    challengeType === c.value
+                      ? 'bg-accent/20 text-accent2 border-accent/40'
+                      : 'bg-surface2 text-ink3 border-transparent hover:text-ink2'
+                  }`}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {error && <p className="text-stake text-xs">{error}</p>}
+
+          <div className="flex items-center gap-2 mt-2">
+            <button
+              type="submit"
+              className="flex-1 rounded-full bg-accent text-ink font-medium text-sm py-2.5 hover:bg-accent2 hover:scale-105 transition-all duration-200"
+            >
+              Save alarm
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-full border border-edge text-ink2 font-medium text-sm px-5 py-2.5 hover:text-paper hover:border-ink3 transition-colors duration-200"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [balance] = useState(482.5);
   const [alarms, setAlarms] = useState([
@@ -196,6 +371,26 @@ function App() {
     setAlarms((prev) => prev.map((a) => (a.id === id ? { ...a, enabled: !a.enabled } : a)));
 
   const deleteAlarm = (id) => setAlarms((prev) => prev.filter((a) => a.id !== id));
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingAlarm, setEditingAlarm] = useState(null);
+
+  const openAddModal = () => {
+    setEditingAlarm(null);
+    setModalOpen(true);
+  };
+  const openEditModal = (alarm) => {
+    setEditingAlarm(alarm);
+    setModalOpen(true);
+  };
+  const closeModal = () => setModalOpen(false);
+  const saveAlarm = (alarm) => {
+    setAlarms((prev) => {
+      const exists = prev.some((a) => a.id === alarm.id);
+      return exists ? prev.map((a) => (a.id === alarm.id ? alarm : a)) : [...prev, alarm];
+    });
+    setModalOpen(false);
+  };
 
   const activeCount = alarms.filter((a) => a.enabled).length;
   const totalStaked = alarms.filter((a) => a.enabled).reduce((sum, a) => sum + a.stake, 0);
@@ -273,18 +468,36 @@ function App() {
         </div>
 
         <div className="mt-10">
-          <h2 className="font-display text-sm tracking-wide text-ink2 uppercase">Your alarms</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-sm tracking-wide text-ink2 uppercase">Your alarms</h2>
+            <button
+              type="button"
+              onClick={openAddModal}
+              className="flex items-center gap-1.5 rounded-full bg-accent/15 border border-accent/30 text-accent2 text-xs font-medium px-3.5 py-1.5 hover:bg-accent/25 hover:scale-105 transition-all duration-200"
+            >
+              <Plus size={13} strokeWidth={2.2} />
+              Add alarm
+            </button>
+          </div>
           {alarms.length === 0 ? (
-            <p className="text-ink3 text-sm mt-2">No alarms yet.</p>
+            <p className="text-ink3 text-sm mt-4">No alarms yet — add your first one.</p>
           ) : (
             <div className="grid sm:grid-cols-2 gap-4 mt-4">
               {alarms.map((alarm) => (
-                <AlarmCard key={alarm.id} alarm={alarm} onToggle={toggleAlarm} onDelete={deleteAlarm} />
+                <AlarmCard
+                  key={alarm.id}
+                  alarm={alarm}
+                  onToggle={toggleAlarm}
+                  onDelete={deleteAlarm}
+                  onEdit={() => openEditModal(alarm)}
+                />
               ))}
             </div>
           )}
         </div>
       </main>
+
+      {modalOpen && <AlarmModal existing={editingAlarm} onClose={closeModal} onSave={saveAlarm} />}
     </div>
   );
 }
