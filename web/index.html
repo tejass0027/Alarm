@@ -123,6 +123,13 @@ const Plus = (p) => (
     <path d="M12 5v14" />
   </Icon>
 );
+const AlertTriangle = (p) => (
+  <Icon {...p}>
+    <path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+    <line x1="12" y1="9" x2="12" y2="13" />
+    <line x1="12" y1="17" x2="12.01" y2="17" />
+  </Icon>
+);
 
 const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 const CHALLENGE_TYPES = [
@@ -130,8 +137,37 @@ const CHALLENGE_TYPES = [
   { value: 'math', label: 'Math' },
   { value: 'typing', label: 'Typing' }
 ];
+const TYPING_PHRASES = [
+  'the early bird catches the worm',
+  'discipline beats motivation',
+  'get up and seize the day',
+  'consistency is the real secret'
+];
 
-function AlarmCard({ alarm, onToggle, onDelete, onEdit }) {
+function generateChallenge(type) {
+  const kind = type === 'random' ? (Math.random() < 0.5 ? 'math' : 'typing') : type;
+  if (kind === 'typing') {
+    const phrase = TYPING_PHRASES[Math.floor(Math.random() * TYPING_PHRASES.length)];
+    return {
+      prompt: `Type this exactly:\n"${phrase}"`,
+      check: (answer) => answer.trim().toLowerCase() === phrase.toLowerCase()
+    };
+  }
+  const ops = ['+', '-', '*'];
+  const op = ops[Math.floor(Math.random() * ops.length)];
+  let x = Math.floor(Math.random() * 40) + 1;
+  let y = Math.floor(Math.random() * 40) + 1;
+  if (op === '-' && y > x) {
+    [x, y] = [y, x];
+  }
+  const answer = op === '+' ? x + y : op === '-' ? x - y : x * y;
+  return {
+    prompt: `What is ${x} ${op} ${y} ?`,
+    check: (input) => Number(input.trim()) === answer
+  };
+}
+
+function AlarmCard({ alarm, onToggle, onDelete, onEdit, onRing }) {
   const hasRepeat = alarm.days.length > 0;
   return (
     <div className="rounded-2xl border border-edge bg-surface p-5 hover:border-accent/40 hover:scale-[1.01] transition-all duration-200">
@@ -196,6 +232,14 @@ function AlarmCard({ alarm, onToggle, onDelete, onEdit }) {
           className="w-8 h-8 rounded-lg flex items-center justify-center text-ink3 hover:text-stake hover:bg-surface2 transition-colors duration-200"
         >
           <Trash2 size={15} />
+        </button>
+        <button
+          type="button"
+          onClick={onRing}
+          className="ml-auto flex items-center gap-1.5 rounded-full bg-surface2 text-ink2 text-xs font-medium px-3 py-1.5 hover:text-accent2 hover:bg-accent/10 transition-colors duration-200"
+        >
+          <Bell size={13} />
+          Preview
         </button>
       </div>
     </div>
@@ -359,8 +403,119 @@ function AlarmModal({ existing, onClose, onSave }) {
   );
 }
 
+function RingingScreen({ alarm, onResolve }) {
+  const rounds = 2;
+  const [round, setRound] = useState(1);
+  const [challenge, setChallenge] = useState(() => generateChallenge(alarm.challengeType));
+  const [answer, setAnswer] = useState('');
+  const [feedback, setFeedback] = useState(null);
+  const [confirmingGiveUp, setConfirmingGiveUp] = useState(false);
+
+  const handleChange = (e) => {
+    setAnswer(e.target.value);
+    setFeedback(null);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!answer.trim()) {
+      setFeedback({ type: 'error', text: 'Enter an answer first.' });
+      return;
+    }
+    if (challenge.check(answer)) {
+      if (round >= rounds) {
+        onResolve('solved');
+        return;
+      }
+      setFeedback({ type: 'success', text: 'Correct — next one.' });
+      setRound((r) => r + 1);
+      setChallenge(generateChallenge(alarm.challengeType));
+      setAnswer('');
+    } else {
+      setFeedback({ type: 'error', text: 'Not quite — try again.' });
+      setAnswer('');
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-ink font-body text-paper flex items-center justify-center p-6 relative overflow-hidden">
+      <div
+        className="absolute top-1/4 left-1/2 -translate-x-1/2 w-72 h-72 rounded-full bg-stake/20 blur-[100px]"
+        aria-hidden="true"
+      ></div>
+      <div className="relative w-full max-w-sm text-center">
+        <div className="mx-auto w-16 h-16 rounded-full bg-stake/15 border border-stake/40 flex items-center justify-center text-stake animate-pulse">
+          <Bell size={26} strokeWidth={1.8} />
+        </div>
+        <h1 className="font-display text-3xl font-semibold mt-6">Wake up</h1>
+        <p className="text-ink2 text-sm mt-2">{alarm.label || 'Alarm'}</p>
+
+        <div className="inline-flex items-center gap-1.5 rounded-full bg-stake/10 text-stake border border-stake/25 px-4 py-1.5 text-sm font-medium mt-4">
+          <AlertTriangle size={14} />${alarm.stake} at stake
+        </div>
+
+        <p className="text-ink3 text-xs mt-8 uppercase tracking-wide">
+          Round {round} of {rounds}
+        </p>
+        <p className="font-display text-xl mt-3 whitespace-pre-line">{challenge.prompt}</p>
+
+        <form onSubmit={handleSubmit} className="mt-5">
+          <input
+            type="text"
+            value={answer}
+            onChange={handleChange}
+            autoFocus
+            className="w-full rounded-lg bg-surface2 border border-edge px-4 py-2.5 text-center text-paper focus:outline-none focus:border-accent transition-colors duration-200"
+            placeholder="Your answer"
+          />
+          {feedback && (
+            <p className={`text-xs mt-2 ${feedback.type === 'success' ? 'text-win' : 'text-stake'}`}>
+              {feedback.text}
+            </p>
+          )}
+          <button
+            type="submit"
+            className="w-full rounded-full bg-accent text-ink font-medium text-sm py-2.5 mt-4 hover:bg-accent2 hover:scale-105 transition-all duration-200"
+          >
+            Submit
+          </button>
+        </form>
+
+        <div className="mt-6">
+          {confirmingGiveUp ? (
+            <div className="flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => onResolve('gave_up')}
+                className="rounded-full bg-stake text-ink text-xs font-medium px-4 py-2 hover:scale-105 transition-all duration-200"
+              >
+                Confirm — lose ${alarm.stake}
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmingGiveUp(false)}
+                className="text-ink3 text-xs hover:text-ink2 transition-colors duration-200"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmingGiveUp(true)}
+              className="text-stake/80 text-xs hover:text-stake transition-colors duration-200"
+            >
+              Give up (lose stake)
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function App() {
-  const [balance] = useState(482.5);
+  const [balance, setBalance] = useState(482.5);
   const [alarms, setAlarms] = useState([
     { id: 1, time: '06:30', label: 'Gym before work', stake: 15, days: [0, 1, 2, 3, 4], enabled: true },
     { id: 2, time: '08:00', label: 'Sunday long run', stake: 10, days: [6], enabled: true },
@@ -400,6 +555,18 @@ function App() {
     { label: 'Total staked', value: `$${totalStaked}`, Icon: Wallet },
     { label: 'Win rate', value: '86%', Icon: TrendingUp }
   ];
+
+  const [ringingAlarm, setRingingAlarm] = useState(null);
+  const resolveRing = (result) => {
+    if (result === 'gave_up' && ringingAlarm) {
+      setBalance((b) => b - ringingAlarm.stake);
+    }
+    setRingingAlarm(null);
+  };
+
+  if (ringingAlarm) {
+    return <RingingScreen alarm={ringingAlarm} onResolve={resolveRing} />;
+  }
 
   return (
     <div className="min-h-screen bg-ink font-body text-paper">
@@ -441,6 +608,7 @@ function App() {
             <div className="relative flex flex-wrap items-center gap-3 mt-6">
               <button
                 type="button"
+                onClick={() => setBalance((b) => b + 50)}
                 className="rounded-full bg-accent text-ink font-medium text-sm px-5 py-2.5 hover:bg-accent2 hover:scale-105 transition-all duration-200"
               >
                 Deposit funds
@@ -490,6 +658,7 @@ function App() {
                   onToggle={toggleAlarm}
                   onDelete={deleteAlarm}
                   onEdit={() => openEditModal(alarm)}
+                  onRing={() => setRingingAlarm(alarm)}
                 />
               ))}
             </div>
