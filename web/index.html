@@ -1,0 +1,185 @@
+<title>Stake Alarm</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700;800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: '#08070F',
+          surface: '#14121F',
+          surface2: '#1C1930',
+          edge: 'rgba(255,255,255,0.08)',
+          accent: '#8B5CF6',
+          accent2: '#C4B5FD',
+          stake: '#FB7185',
+          win: '#34D399',
+          paper: '#F4F2FA',
+          ink2: '#A9A3BE',
+          ink3: '#6E6785'
+        },
+        fontFamily: {
+          display: ['Unbounded', 'sans-serif'],
+          body: ['"Hanken Grotesk"', 'sans-serif']
+        }
+      }
+    }
+  };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js"></script>
+<style>
+  body { background: #08070F; }
+  ::selection { background: #8B5CF6; color: #08070F; }
+  .tabular { font-variant-numeric: tabular-nums; }
+</style>
+
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState } = React;
+
+/*
+  Icons below are hand-inlined to match the lucide-react API (size / strokeWidth /
+  className props, 24x24 stroke paths) so this file runs standalone with no build
+  step. In a real project, delete this block and use:
+  import { Bell, Settings, Clock, Wallet, TrendingUp } from 'lucide-react';
+*/
+function Icon({ children, size = 20, strokeWidth = 1.8, className = '', ...rest }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      {...rest}
+    >
+      {children}
+    </svg>
+  );
+}
+const Bell = (p) => (
+  <Icon {...p}>
+    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+    <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+  </Icon>
+);
+const Settings = (p) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="3" />
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" />
+  </Icon>
+);
+const Clock = (p) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
+  </Icon>
+);
+const Wallet = (p) => (
+  <Icon {...p}>
+    <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4" />
+    <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />
+    <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
+  </Icon>
+);
+const TrendingUp = (p) => (
+  <Icon {...p}>
+    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+    <polyline points="16 7 22 7 22 13" />
+  </Icon>
+);
+
+function App() {
+  const [balance] = useState(482.5);
+
+  const stats = [
+    { label: 'Active alarms', value: '3', Icon: Clock },
+    { label: 'Total staked', value: '$47', Icon: Wallet },
+    { label: 'Win rate', value: '86%', Icon: TrendingUp }
+  ];
+
+  return (
+    <div className="min-h-screen bg-ink font-body text-paper">
+      <header className="sticky top-0 z-30 backdrop-blur-xl bg-ink/70 border-b border-edge">
+        <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-accent/15 border border-accent/30 flex items-center justify-center text-accent">
+              <Bell size={16} strokeWidth={2} />
+            </div>
+            <span className="font-display font-semibold tracking-tight text-[15px]">Stake Alarm</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:flex items-center gap-2 rounded-full border border-edge bg-surface px-3.5 py-1.5">
+              <span className="text-ink3 text-xs">Balance</span>
+              <span className="tabular font-semibold text-sm text-paper">${balance.toFixed(2)}</span>
+            </div>
+            <button
+              type="button"
+              aria-label="Settings"
+              className="w-9 h-9 rounded-full border border-edge flex items-center justify-center text-ink2 hover:text-paper hover:border-ink3 transition-colors duration-200"
+            >
+              <Settings size={17} />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-5xl mx-auto px-6 py-10">
+        <div className="grid md:grid-cols-[1.3fr_1fr] gap-5">
+          <div className="relative rounded-2xl border border-accent/25 bg-gradient-to-br from-surface via-surface to-surface2 p-7 overflow-hidden">
+            <div
+              className="absolute -top-24 -right-16 w-56 h-56 rounded-full bg-accent/20 blur-[90px]"
+              aria-hidden="true"
+            ></div>
+            <p className="relative text-ink2 text-sm mb-3">Available to stake</p>
+            <p className="relative font-display tabular text-5xl sm:text-6xl font-semibold text-paper">
+              ${balance.toFixed(2)}
+            </p>
+            <div className="relative flex flex-wrap items-center gap-3 mt-6">
+              <button
+                type="button"
+                className="rounded-full bg-accent text-ink font-medium text-sm px-5 py-2.5 hover:bg-accent2 hover:scale-105 transition-all duration-200"
+              >
+                Deposit funds
+              </button>
+              <span className="text-ink3 text-xs">Virtual balance — no real money moves</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 md:grid-cols-1 gap-3">
+            {stats.map(({ label, value, Icon: StatIcon }) => (
+              <div
+                key={label}
+                className="rounded-2xl border border-edge bg-surface px-4 py-3.5 flex flex-col md:flex-row items-start md:items-center gap-1.5 md:gap-3 hover:border-ink3 transition-colors duration-200"
+              >
+                <div className="w-8 h-8 rounded-lg bg-surface2 flex items-center justify-center text-accent2 shrink-0">
+                  <StatIcon size={16} />
+                </div>
+                <div className="flex flex-row md:flex-col items-baseline md:items-start gap-1.5 md:gap-0">
+                  <p className="font-display tabular text-lg font-semibold text-paper">{value}</p>
+                  <p className="text-ink3 text-[11px] leading-none">{label}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-10">
+          <h2 className="font-display text-sm tracking-wide text-ink2 uppercase">Your alarms</h2>
+          <p className="text-ink3 text-sm mt-2">No alarms yet.</p>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
