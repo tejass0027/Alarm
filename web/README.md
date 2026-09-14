@@ -8,7 +8,7 @@ This is a design concept, not a wired-up app: no backend, no persistence. It's b
 in phases:
 
 1. Theme, top bar, and dashboard shell (balance card + stats) — done
-2. Alarm cards (time, stake badge, repeat days, toggle, edit/delete)
+2. Alarm cards (time, stake badge, repeat days, toggle, edit/delete) — done
 3. Add/edit alarm modal
 4. Ringing/challenge screen
 5. Polish pass
