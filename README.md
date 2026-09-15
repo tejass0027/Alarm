@@ -25,45 +25,32 @@ share code or data. Alarms set on one platform don't appear on another.
 
 ## Desktop app (Python)
 
-### Requirements
+A Tkinter app that runs as a normal alarm clock while open. When an alarm
+fires, it opens a topmost window that plays a looping alarm sound and won't
+let you close it — you have to solve a configurable number of challenge
+rounds in a row to dismiss it. Giving up or letting it time out deducts the
+stake automatically.
 
-- Python 3.10+ on Windows (uses `tkinter` and `winsound`, both included with
-  the standard Windows Python installer — no `pip install` needed).
-
-### Run it
-
-```bash
-python main.py
-```
-
-The app window must stay open (it can be minimized) for alarms to fire —
-there's no background service.
-
-### Notes
-
-- One-time alarms (no repeat days checked) automatically disable themselves
-  after firing once.
-- Each alarm requires solving a configurable number of challenge "rounds" in
-  a row, and auto-fails (deducting the stake) after a configurable timeout
-  if you never respond.
-- History of every alarm firing — solved, failed, or given up — plus the
-  resulting balance is kept in `data/history.json` and viewable from the
-  "History" button.
-- To add a new challenge type, add a `Challenge` subclass in `challenges.py`
-  and register it in `CHALLENGE_TYPES`.
+- One-time alarms disable themselves after firing once; repeating alarms
+  reschedule for their next matching day.
+- Every firing — solved, failed, or given up — is logged to a history view
+  alongside the resulting balance.
+- Challenges are pluggable: math and typing exist now, and adding a new
+  `Challenge` subclass is enough to register a new type.
 
 ## Android app
 
-Native Kotlin + Jetpack Compose app using `AlarmManager`'s alarm-clock API,
-a foreground service for ringing, and a full-screen lock-screen activity for
-the challenge. Open [android/](android) in Android Studio and run it —
-see [android/README.md](android/README.md) for permissions and known
-environment gotchas (e.g. a space in your Windows username breaking
-Gradle's daemon).
+A native alarm-clock app built on `AlarmManager`'s alarm-clock API, so
+alarms fire reliably even in Doze mode and reschedule themselves after a
+reboot. When one rings, a foreground service loops the alarm sound and a
+full-screen activity takes over the lock screen with the same
+challenge-to-dismiss mechanic as the desktop app — solve it or give up and
+lose the stake.
 
 ## Web UI concept
 
-A single-file, buildless React + Tailwind mockup of the interface — open
-[web/index.html](web/index.html) directly in a browser, no build step. It's
-a design concept, not a wired-up app: no persistence, no real scheduling.
-See [web/README.md](web/README.md) for the phase-by-phase build notes.
+A design concept for what a Stake Alarm web app could look like: a
+dashboard with a balance card, alarm cards you can add/edit/delete/toggle,
+and a full-screen ringing/challenge view (triggered from a "Preview" button
+per card, since there's no real scheduling behind it). It's a visual and
+interaction mockup, not a persisted, wired-up app.
