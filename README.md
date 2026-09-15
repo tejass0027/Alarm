@@ -49,8 +49,9 @@ lose the stake.
 
 ## Web UI concept
 
-A design concept for what a Stake Alarm web app could look like: a
-dashboard with a balance card, alarm cards you can add/edit/delete/toggle,
-and a full-screen ringing/challenge view (triggered from a "Preview" button
-per card, since there's no real scheduling behind it). It's a visual and
-interaction mockup, not a persisted, wired-up app.
+A design concept for what a Stake Alarm web app could look like, styled
+after a mechanical split-flap departure board: every time and dollar amount
+renders as individual flip-tile characters, and alarms sit in a manifest-style
+list you can add/edit/delete/toggle. A "Preview" button per row triggers the
+full-screen ringing/challenge view, since there's no real scheduling behind
+it — it's a visual and interaction mockup, not a persisted, wired-up app.

@@ -1,5 +1,5 @@
 <title>Stake Alarm</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700;800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -8,21 +8,19 @@
     theme: {
       extend: {
         colors: {
-          ink: '#08070F',
-          surface: '#14121F',
-          surface2: '#1C1930',
-          edge: 'rgba(255,255,255,0.08)',
-          accent: '#8B5CF6',
-          accent2: '#C4B5FD',
-          stake: '#FB7185',
-          win: '#34D399',
-          paper: '#F4F2FA',
-          ink2: '#A9A3BE',
-          ink3: '#6E6785'
+          board: '#121212',
+          tile: '#1E1E1E',
+          seam: '#0A0A0A',
+          amber: '#F2A93B',
+          amberDim: '#8A6A2E',
+          risk: '#D64545',
+          win: '#7FA66B',
+          ink2: '#B8B2A8',
+          ink3: '#6B6560'
         },
         fontFamily: {
-          display: ['Unbounded', 'sans-serif'],
-          body: ['"Hanken Grotesk"', 'sans-serif']
+          display: ['"Big Shoulders Display"', 'sans-serif'],
+          mono: ['"IBM Plex Mono"', 'monospace']
         }
       }
     }
@@ -30,11 +28,11 @@
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js"></script>
 <style>
-  body { background: #08070F; }
-  ::selection { background: #8B5CF6; color: #08070F; }
+  body { background: #121212; }
+  ::selection { background: #F2A93B; color: #121212; }
   .tabular { font-variant-numeric: tabular-nums; }
   .focus-ring:focus-visible {
-    outline: 2px solid #8B5CF6;
+    outline: 2px solid #F2A93B;
     outline-offset: 2px;
   }
   @keyframes fadeInUp {
@@ -63,7 +61,7 @@ const { useState } = React;
   Icons below are hand-inlined to match the lucide-react API (size / strokeWidth /
   className props, 24x24 stroke paths) so this file runs standalone with no build
   step. In a real project, delete this block and use:
-  import { Bell, Settings, Clock, Wallet, TrendingUp } from 'lucide-react';
+  import { Bell, Settings, Clock, Wallet, TrendingUp, Pencil, Trash2, X, Plus, AlertTriangle } from 'lucide-react';
 */
 function Icon({ children, size = 20, strokeWidth = 1.8, className = '', ...rest }) {
   return (
@@ -150,6 +148,43 @@ const AlertTriangle = (p) => (
   </Icon>
 );
 
+/* The core visual signature: every number on the board renders as individual
+   mechanical flap characters, like a real split-flap departure display. */
+function FlapChar({ char, size = 'md', dim = false }) {
+  if (char === ' ') return <span className="inline-block w-2" aria-hidden="true" />;
+  if (!/[A-Za-z0-9]/.test(char)) {
+    const punctSize = size === 'lg' ? 'text-3xl px-0.5' : size === 'sm' ? 'text-sm px-0.5' : 'text-lg px-0.5';
+    return <span className={`font-display font-black text-amber/60 ${punctSize}`}>{char}</span>;
+  }
+  const sizing =
+    size === 'lg'
+      ? 'text-3xl w-10 h-12'
+      : size === 'sm'
+      ? 'text-sm w-5 h-6'
+      : 'text-lg w-7 h-9';
+  return (
+    <span
+      className={`relative inline-flex items-center justify-center rounded-[3px] bg-tile font-display font-black leading-none ${sizing} ${
+        dim ? 'text-amberDim' : 'text-amber'
+      }`}
+      style={{ boxShadow: 'inset 0 -3px 0 rgba(0,0,0,0.45), inset 0 2px 0 rgba(255,255,255,0.04)' }}
+    >
+      {char}
+      <span className="absolute left-0 right-0 top-1/2 h-px bg-seam/80 -translate-y-px pointer-events-none" />
+    </span>
+  );
+}
+
+function FlapRow({ text, size = 'md', dim = false }) {
+  return (
+    <span className="inline-flex items-center gap-[3px]" aria-label={text}>
+      {text.split('').map((c, i) => (
+        <FlapChar key={i} char={c} size={size} dim={dim} />
+      ))}
+    </span>
+  );
+}
+
 const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 const CHALLENGE_TYPES = [
   { value: 'random', label: 'Random' },
@@ -186,18 +221,47 @@ function generateChallenge(type) {
   };
 }
 
-function AlarmCard({ alarm, onToggle, onDelete, onEdit, onRing, style }) {
+function AlarmRow({ alarm, onToggle, onDelete, onEdit, onRing, style }) {
   const hasRepeat = alarm.days.length > 0;
   return (
     <div
       style={style}
-      className="animate-fade-in-up rounded-2xl border border-edge bg-surface p-5 hover:border-accent/40 hover:scale-[1.01] transition-all duration-200"
+      className={`animate-fade-in-up flex flex-col sm:flex-row sm:items-center gap-4 border-b border-tile py-5 transition-opacity duration-200 ${
+        alarm.enabled ? '' : 'opacity-50'
+      }`}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="font-display tabular text-3xl font-semibold text-paper">{alarm.time}</p>
-          <p className="text-ink2 text-sm mt-1">{alarm.label}</p>
+      <div className="shrink-0">
+        <FlapRow text={alarm.time} size="lg" dim={!alarm.enabled} />
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <p className="font-mono text-sm text-ink2 uppercase tracking-wide truncate">
+          {alarm.label || 'Unlabeled'}
+        </p>
+        <div className="flex items-center gap-1.5 mt-2">
+          {hasRepeat ? (
+            DAY_LABELS.map((d, i) => (
+              <span
+                key={i}
+                className={`w-4 h-4 rounded-sm flex items-center justify-center text-[9px] font-mono font-bold ${
+                  alarm.days.includes(i) ? 'bg-amber/20 text-amber' : 'bg-tile text-ink3'
+                }`}
+              >
+                {d}
+              </span>
+            ))
+          ) : (
+            <span className="font-mono text-[10px] text-ink3 uppercase tracking-widest">One-time</span>
+          )}
         </div>
+      </div>
+
+      <div className="flex items-center gap-6 shrink-0">
+        <div className="text-right">
+          <p className="font-mono text-[10px] text-ink3 uppercase tracking-widest mb-1">Stake</p>
+          <FlapRow text={`$${alarm.stake}`} size="sm" />
+        </div>
+
         <button
           type="button"
           role="switch"
@@ -205,64 +269,42 @@ function AlarmCard({ alarm, onToggle, onDelete, onEdit, onRing, style }) {
           aria-label={alarm.enabled ? 'Disable alarm' : 'Enable alarm'}
           onClick={() => onToggle(alarm.id)}
           className={`focus-ring w-11 h-6 rounded-full border transition-colors duration-200 relative shrink-0 ${
-            alarm.enabled ? 'bg-accent border-accent' : 'bg-surface2 border-edge'
+            alarm.enabled ? 'bg-amber border-amber' : 'bg-tile border-seam'
           }`}
         >
           <span
-            className={`absolute top-0.5 left-0.5 w-[18px] h-[18px] rounded-full bg-paper transition-transform duration-200 ${
+            className={`absolute top-0.5 left-0.5 w-[18px] h-[18px] rounded-full bg-board transition-transform duration-200 ${
               alarm.enabled ? 'translate-x-[22px]' : 'translate-x-0'
             }`}
           />
         </button>
-      </div>
 
-      <div className="flex flex-wrap items-center gap-2 mt-4">
-        <span className="rounded-full bg-stake/10 text-stake border border-stake/25 px-3 py-1 text-xs font-medium">
-          ${alarm.stake} at stake
-        </span>
-        {hasRepeat ? (
-          <div className="flex items-center gap-1">
-            {DAY_LABELS.map((d, i) => (
-              <span
-                key={i}
-                className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-medium ${
-                  alarm.days.includes(i) ? 'bg-accent/20 text-accent2' : 'text-ink3/50'
-                }`}
-              >
-                {d}
-              </span>
-            ))}
-          </div>
-        ) : (
-          <span className="text-ink3 text-xs">One-time</span>
-        )}
-      </div>
-
-      <div className="flex items-center gap-1 mt-4 pt-4 border-t border-edge">
-        <button
-          type="button"
-          aria-label="Edit alarm"
-          onClick={onEdit}
-          className="focus-ring w-8 h-8 rounded-lg flex items-center justify-center text-ink3 hover:text-accent2 hover:bg-surface2 transition-colors duration-200"
-        >
-          <Pencil size={15} />
-        </button>
-        <button
-          type="button"
-          aria-label="Delete alarm"
-          onClick={() => onDelete(alarm.id)}
-          className="focus-ring w-8 h-8 rounded-lg flex items-center justify-center text-ink3 hover:text-stake hover:bg-surface2 transition-colors duration-200"
-        >
-          <Trash2 size={15} />
-        </button>
-        <button
-          type="button"
-          onClick={onRing}
-          className="focus-ring ml-auto flex items-center gap-1.5 rounded-full bg-surface2 text-ink2 text-xs font-medium px-3 py-1.5 hover:text-accent2 hover:bg-accent/10 transition-colors duration-200"
-        >
-          <Bell size={13} />
-          Preview
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            aria-label="Preview ring"
+            onClick={onRing}
+            className="focus-ring w-8 h-8 rounded flex items-center justify-center text-ink3 hover:text-amber hover:bg-tile transition-colors duration-200"
+          >
+            <Bell size={15} />
+          </button>
+          <button
+            type="button"
+            aria-label="Edit alarm"
+            onClick={onEdit}
+            className="focus-ring w-8 h-8 rounded flex items-center justify-center text-ink3 hover:text-amber hover:bg-tile transition-colors duration-200"
+          >
+            <Pencil size={15} />
+          </button>
+          <button
+            type="button"
+            aria-label="Delete alarm"
+            onClick={() => onDelete(alarm.id)}
+            className="focus-ring w-8 h-8 rounded flex items-center justify-center text-ink3 hover:text-risk hover:bg-tile transition-colors duration-200"
+          >
+            <Trash2 size={15} />
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -303,41 +345,41 @@ function AlarmModal({ existing, onClose, onSave }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
       onClick={onClose}
     >
       <div
-        className="animate-modal-in w-full max-w-md rounded-2xl border border-edge bg-surface p-6"
+        className="animate-modal-in w-full max-w-md rounded-lg border-2 border-tile bg-board p-6"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="font-display text-lg font-semibold text-paper">
-            {existing ? 'Edit alarm' : 'New alarm'}
+        <div className="flex items-center justify-between mb-5 pb-4 border-b border-tile">
+          <h3 className="font-display font-black text-base tracking-wide text-amber uppercase">
+            {existing ? 'Edit entry' : 'New entry'}
           </h3>
           <button
             type="button"
             aria-label="Close"
             onClick={onClose}
-            className="focus-ring w-8 h-8 rounded-lg flex items-center justify-center text-ink3 hover:text-paper hover:bg-surface2 transition-colors duration-200"
+            className="focus-ring w-8 h-8 rounded flex items-center justify-center text-ink3 hover:text-amber hover:bg-tile transition-colors duration-200"
           >
             <X size={16} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 font-mono">
           <div className="flex gap-3">
             <label className="flex-1">
-              <span className="block text-xs text-ink2 mb-1.5">Time</span>
+              <span className="block text-[10px] text-ink3 uppercase tracking-widest mb-1.5">Time</span>
               <input
                 type="time"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
                 style={{ colorScheme: 'dark' }}
-                className="w-full rounded-lg bg-surface2 border border-edge px-3 py-2 text-sm text-paper focus:outline-none focus:border-accent transition-colors duration-200"
+                className="w-full rounded bg-tile border border-tile px-3 py-2 text-sm text-amber focus:outline-none focus:border-amber transition-colors duration-200"
               />
             </label>
             <label className="flex-1">
-              <span className="block text-xs text-ink2 mb-1.5">Stake</span>
+              <span className="block text-[10px] text-ink3 uppercase tracking-widest mb-1.5">Stake</span>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink3 text-sm">$</span>
                 <input
@@ -346,33 +388,33 @@ function AlarmModal({ existing, onClose, onSave }) {
                   step="1"
                   value={stake}
                   onChange={(e) => setStake(e.target.value)}
-                  className="w-full rounded-lg bg-surface2 border border-edge pl-6 pr-3 py-2 text-sm text-paper focus:outline-none focus:border-accent transition-colors duration-200"
+                  className="w-full rounded bg-tile border border-tile pl-6 pr-3 py-2 text-sm text-risk focus:outline-none focus:border-amber transition-colors duration-200"
                 />
               </div>
             </label>
           </div>
 
           <label>
-            <span className="block text-xs text-ink2 mb-1.5">Label</span>
+            <span className="block text-[10px] text-ink3 uppercase tracking-widest mb-1.5">Label</span>
             <input
               type="text"
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               placeholder="Gym before work"
-              className="w-full rounded-lg bg-surface2 border border-edge px-3 py-2 text-sm text-paper placeholder:text-ink3/60 focus:outline-none focus:border-accent transition-colors duration-200"
+              className="w-full rounded bg-tile border border-tile px-3 py-2 text-sm text-ink2 placeholder:text-ink3/60 focus:outline-none focus:border-amber transition-colors duration-200"
             />
           </label>
 
           <div>
-            <span className="block text-xs text-ink2 mb-1.5">Repeat on</span>
+            <span className="block text-[10px] text-ink3 uppercase tracking-widest mb-1.5">Repeat on</span>
             <div className="flex items-center gap-1.5">
               {DAY_LABELS.map((d, i) => (
                 <button
                   key={i}
                   type="button"
                   onClick={() => toggleDay(i)}
-                  className={`focus-ring w-8 h-8 rounded-full text-xs font-medium transition-colors duration-200 ${
-                    days.includes(i) ? 'bg-accent text-ink' : 'bg-surface2 text-ink3 hover:text-ink2'
+                  className={`focus-ring w-8 h-8 rounded text-xs font-bold transition-colors duration-200 ${
+                    days.includes(i) ? 'bg-amber text-board' : 'bg-tile text-ink3 hover:text-ink2'
                   }`}
                 >
                   {d}
@@ -383,17 +425,17 @@ function AlarmModal({ existing, onClose, onSave }) {
           </div>
 
           <div>
-            <span className="block text-xs text-ink2 mb-1.5">Challenge</span>
+            <span className="block text-[10px] text-ink3 uppercase tracking-widest mb-1.5">Challenge</span>
             <div className="grid grid-cols-3 gap-1.5">
               {CHALLENGE_TYPES.map((c) => (
                 <button
                   key={c.value}
                   type="button"
                   onClick={() => setChallengeType(c.value)}
-                  className={`focus-ring rounded-lg py-1.5 text-xs font-medium transition-colors duration-200 border ${
+                  className={`focus-ring rounded py-1.5 text-xs font-semibold uppercase tracking-wide transition-colors duration-200 border ${
                     challengeType === c.value
-                      ? 'bg-accent/20 text-accent2 border-accent/40'
-                      : 'bg-surface2 text-ink3 border-transparent hover:text-ink2'
+                      ? 'bg-amber/20 text-amber border-amber/50'
+                      : 'bg-tile text-ink3 border-transparent hover:text-ink2'
                   }`}
                 >
                   {c.label}
@@ -402,19 +444,19 @@ function AlarmModal({ existing, onClose, onSave }) {
             </div>
           </div>
 
-          {error && <p className="text-stake text-xs">{error}</p>}
+          {error && <p className="text-risk text-xs">{error}</p>}
 
           <div className="flex items-center gap-2 mt-2">
             <button
               type="submit"
-              className="focus-ring flex-1 rounded-full bg-accent text-ink font-medium text-sm py-2.5 hover:bg-accent2 hover:scale-105 transition-all duration-200"
+              className="focus-ring flex-1 rounded bg-amber text-board font-display font-black text-sm uppercase tracking-wide py-2.5 hover:bg-amber/90 hover:scale-105 transition-all duration-200"
             >
               Save alarm
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="focus-ring rounded-full border border-edge text-ink2 font-medium text-sm px-5 py-2.5 hover:text-paper hover:border-ink3 transition-colors duration-200"
+              className="focus-ring rounded border border-tile text-ink2 font-medium text-sm px-5 py-2.5 hover:text-amber hover:border-amber/40 transition-colors duration-200"
             >
               Cancel
             </button>
@@ -460,26 +502,24 @@ function RingingScreen({ alarm, onResolve }) {
   };
 
   return (
-    <div className="min-h-screen bg-ink font-body text-paper flex items-center justify-center p-6 relative overflow-hidden">
-      <div
-        className="absolute top-1/4 left-1/2 -translate-x-1/2 w-72 h-72 rounded-full bg-stake/20 blur-[100px]"
-        aria-hidden="true"
-      ></div>
-      <div className="relative w-full max-w-sm text-center">
-        <div className="mx-auto w-16 h-16 rounded-full bg-stake/15 border border-stake/40 flex items-center justify-center text-stake animate-pulse">
+    <div className="min-h-screen bg-board font-mono text-ink2 flex items-center justify-center p-6">
+      <div className="w-full max-w-sm text-center">
+        <div className="mx-auto w-16 h-16 rounded-full bg-risk/15 border-2 border-risk flex items-center justify-center text-risk animate-pulse">
           <Bell size={26} strokeWidth={1.8} />
         </div>
-        <h1 className="font-display text-3xl font-semibold mt-6">Wake up</h1>
-        <p className="text-ink2 text-sm mt-2">{alarm.label || 'Alarm'}</p>
+        <h1 className="font-display font-black text-3xl uppercase tracking-wide text-amber mt-6">Wake up</h1>
+        <p className="text-ink3 text-sm mt-2">{alarm.label || 'Alarm'}</p>
 
-        <div className="inline-flex items-center gap-1.5 rounded-full bg-stake/10 text-stake border border-stake/25 px-4 py-1.5 text-sm font-medium mt-4">
-          <AlertTriangle size={14} />${alarm.stake} at stake
+        <div className="inline-flex items-center gap-2 border-2 border-risk rounded px-4 py-1.5 mt-4">
+          <AlertTriangle size={14} className="text-risk" />
+          <FlapRow text={`$${alarm.stake}`} size="sm" />
+          <span className="text-risk text-xs uppercase tracking-wide">at stake</span>
         </div>
 
-        <p className="text-ink3 text-xs mt-8 uppercase tracking-wide">
+        <p className="text-ink3 text-[11px] mt-8 uppercase tracking-[0.2em]">
           Round {round} of {rounds}
         </p>
-        <p className="font-display text-xl mt-3 whitespace-pre-line">{challenge.prompt}</p>
+        <p className="font-display font-bold text-xl mt-3 whitespace-pre-line text-ink2">{challenge.prompt}</p>
 
         <form onSubmit={handleSubmit} className="mt-5">
           <input
@@ -487,17 +527,21 @@ function RingingScreen({ alarm, onResolve }) {
             value={answer}
             onChange={handleChange}
             autoFocus
-            className="w-full rounded-lg bg-surface2 border border-edge px-4 py-2.5 text-center text-paper focus:outline-none focus:border-accent transition-colors duration-200"
+            className="w-full rounded bg-tile border-2 border-tile px-4 py-2.5 text-center text-amber font-mono focus:outline-none focus:border-amber transition-colors duration-200"
             placeholder="Your answer"
           />
           {feedback && (
-            <p className={`text-xs mt-2 ${feedback.type === 'success' ? 'text-win' : 'text-stake'}`}>
+            <p
+              className={`text-xs mt-2 uppercase tracking-wide ${
+                feedback.type === 'success' ? 'text-win' : 'text-risk'
+              }`}
+            >
               {feedback.text}
             </p>
           )}
           <button
             type="submit"
-            className="focus-ring w-full rounded-full bg-accent text-ink font-medium text-sm py-2.5 mt-4 hover:bg-accent2 hover:scale-105 transition-all duration-200"
+            className="focus-ring w-full rounded bg-amber text-board font-display font-black uppercase tracking-wide text-sm py-2.5 mt-4 hover:bg-amber/90 hover:scale-105 transition-all duration-200"
           >
             Submit
           </button>
@@ -509,7 +553,7 @@ function RingingScreen({ alarm, onResolve }) {
               <button
                 type="button"
                 onClick={() => onResolve('gave_up')}
-                className="focus-ring rounded-full bg-stake text-ink text-xs font-medium px-4 py-2 hover:scale-105 transition-all duration-200"
+                className="focus-ring rounded bg-risk text-board text-xs font-bold uppercase px-4 py-2 hover:scale-105 transition-all duration-200"
               >
                 Confirm — lose ${alarm.stake}
               </button>
@@ -525,7 +569,7 @@ function RingingScreen({ alarm, onResolve }) {
             <button
               type="button"
               onClick={() => setConfirmingGiveUp(true)}
-              className="focus-ring text-stake/80 text-xs hover:text-stake transition-colors duration-200"
+              className="focus-ring text-risk/80 text-xs uppercase tracking-wide hover:text-risk transition-colors duration-200"
             >
               Give up (lose stake)
             </button>
@@ -573,8 +617,8 @@ function App() {
   const totalStaked = alarms.filter((a) => a.enabled).reduce((sum, a) => sum + a.stake, 0);
 
   const stats = [
-    { label: 'Active alarms', value: String(activeCount), Icon: Clock },
-    { label: 'Total staked', value: `$${totalStaked}`, Icon: Wallet },
+    { label: 'Active', value: String(activeCount), Icon: Clock },
+    { label: 'Staked', value: `$${totalStaked}`, Icon: Wallet },
     { label: 'Win rate', value: '86%', Icon: TrendingUp }
   ];
 
@@ -591,24 +635,26 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-ink font-body text-paper">
-      <header className="sticky top-0 z-30 backdrop-blur-xl bg-ink/70 border-b border-edge">
+    <div className="min-h-screen bg-board font-mono text-ink2">
+      <header className="border-b-2 border-amber/25">
         <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-accent/15 border border-accent/30 flex items-center justify-center text-accent">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded bg-tile border border-amber/30 flex items-center justify-center text-amber">
               <Bell size={16} strokeWidth={2} />
             </div>
-            <span className="font-display font-semibold tracking-tight text-[15px]">Stake Alarm</span>
+            <span className="font-display font-black text-lg tracking-wide text-amber uppercase">
+              Stake Alarm
+            </span>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 rounded-full border border-edge bg-surface px-3.5 py-1.5">
-              <span className="text-ink3 text-xs">Balance</span>
-              <span className="tabular font-semibold text-sm text-paper">${balance.toFixed(2)}</span>
+          <div className="flex items-center gap-4">
+            <div className="hidden sm:block text-right">
+              <p className="text-[10px] text-ink3 uppercase tracking-widest mb-1">Balance</p>
+              <FlapRow text={`$${balance.toFixed(2)}`} size="sm" />
             </div>
             <button
               type="button"
               aria-label="Settings"
-              className="focus-ring w-9 h-9 rounded-full border border-edge flex items-center justify-center text-ink2 hover:text-paper hover:border-ink3 transition-colors duration-200"
+              className="focus-ring w-9 h-9 rounded border border-tile flex items-center justify-center text-ink3 hover:text-amber hover:border-amber/40 transition-colors duration-200"
             >
               <Settings size={17} />
             </button>
@@ -617,64 +663,53 @@ function App() {
       </header>
 
       <main className="max-w-5xl mx-auto px-6 py-10">
-        <div className="grid md:grid-cols-[1.3fr_1fr] gap-5">
-          <div className="relative rounded-2xl border border-accent/25 bg-gradient-to-br from-surface via-surface to-surface2 p-7 overflow-hidden">
-            <div
-              className="absolute -top-24 -right-16 w-56 h-56 rounded-full bg-accent/20 blur-[90px]"
-              aria-hidden="true"
-            ></div>
-            <p className="relative text-ink2 text-sm mb-3">Available to stake</p>
-            <p className="relative font-display tabular text-5xl sm:text-6xl font-semibold text-paper">
-              ${balance.toFixed(2)}
-            </p>
-            <div className="relative flex flex-wrap items-center gap-3 mt-6">
-              <button
-                type="button"
-                onClick={() => setBalance((b) => b + 50)}
-                className="focus-ring rounded-full bg-accent text-ink font-medium text-sm px-5 py-2.5 hover:bg-accent2 hover:scale-105 transition-all duration-200"
-              >
-                Deposit funds
-              </button>
-              <span className="text-ink3 text-xs">Virtual balance — no real money moves</span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 md:grid-cols-1 gap-3">
-            {stats.map(({ label, value, Icon: StatIcon }) => (
-              <div
-                key={label}
-                className="rounded-2xl border border-edge bg-surface px-4 py-3.5 flex flex-col md:flex-row items-start md:items-center gap-1.5 md:gap-3 hover:border-ink3 transition-colors duration-200"
-              >
-                <div className="w-8 h-8 rounded-lg bg-surface2 flex items-center justify-center text-accent2 shrink-0">
-                  <StatIcon size={16} />
-                </div>
-                <div className="flex flex-row md:flex-col items-baseline md:items-start gap-1.5 md:gap-0">
-                  <p className="font-display tabular text-lg font-semibold text-paper">{value}</p>
-                  <p className="text-ink3 text-[11px] leading-none">{label}</p>
-                </div>
-              </div>
-            ))}
+        <div className="border-2 border-tile rounded-lg p-7">
+          <p className="text-[11px] text-ink3 uppercase tracking-widest mb-4">Available to stake</p>
+          <FlapRow text={`$${balance.toFixed(2)}`} size="lg" />
+          <div className="flex flex-wrap items-center gap-4 mt-6">
+            <button
+              type="button"
+              onClick={() => setBalance((b) => b + 50)}
+              className="focus-ring rounded bg-amber text-board font-display font-black text-sm uppercase tracking-wide px-5 py-2.5 hover:bg-amber/90 hover:scale-105 transition-all duration-200"
+            >
+              Deposit funds
+            </button>
+            <span className="text-ink3 text-xs">Virtual balance — no real money moves</span>
           </div>
         </div>
 
+        <div className="grid grid-cols-3 gap-3 mt-4">
+          {stats.map(({ label, value, Icon: StatIcon }) => (
+            <div key={label} className="border border-tile rounded-lg px-4 py-3.5">
+              <div className="flex items-center gap-1.5 text-ink3 mb-2">
+                <StatIcon size={13} />
+                <span className="text-[10px] uppercase tracking-widest">{label}</span>
+              </div>
+              <p className="font-display font-black text-2xl text-amber tabular">{value}</p>
+            </div>
+          ))}
+        </div>
+
         <div className="mt-10">
-          <div className="flex items-center justify-between">
-            <h2 className="font-display text-sm tracking-wide text-ink2 uppercase">Your alarms</h2>
+          <div className="flex items-center justify-between border-b-2 border-amber/25 pb-3">
+            <h2 className="font-display font-black text-sm tracking-[0.2em] text-ink2 uppercase">
+              Alarms · Manifest
+            </h2>
             <button
               type="button"
               onClick={openAddModal}
-              className="focus-ring flex items-center gap-1.5 rounded-full bg-accent/15 border border-accent/30 text-accent2 text-xs font-medium px-3.5 py-1.5 hover:bg-accent/25 hover:scale-105 transition-all duration-200"
+              className="focus-ring flex items-center gap-1.5 rounded bg-amber/15 border border-amber/40 text-amber text-xs font-mono font-semibold uppercase tracking-wide px-3.5 py-1.5 hover:bg-amber/25 hover:scale-105 transition-all duration-200"
             >
               <Plus size={13} strokeWidth={2.2} />
               Add alarm
             </button>
           </div>
           {alarms.length === 0 ? (
-            <p className="text-ink3 text-sm mt-4">No alarms yet — add your first one.</p>
+            <p className="text-ink3 text-sm mt-6">No alarms yet — add your first one.</p>
           ) : (
-            <div className="grid sm:grid-cols-2 gap-4 mt-4">
+            <div>
               {alarms.map((alarm, i) => (
-                <AlarmCard
+                <AlarmRow
                   key={alarm.id}
                   alarm={alarm}
                   style={{ animationDelay: `${i * 60}ms` }}
