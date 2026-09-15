@@ -8,15 +8,15 @@
     theme: {
       extend: {
         colors: {
-          board: '#121212',
-          tile: '#1E1E1E',
-          seam: '#0A0A0A',
-          amber: '#F2A93B',
-          amberDim: '#8A6A2E',
-          risk: '#D64545',
-          win: '#7FA66B',
-          ink2: '#B8B2A8',
-          ink3: '#6B6560'
+          board: '#E9F1F8',
+          tile: '#FFFFFF',
+          seam: '#C7D9E8',
+          accent: '#1B6FA8',
+          accentDim: '#B7CFE0',
+          risk: '#B23A2E',
+          win: '#4F7A3D',
+          ink2: '#3A4A57',
+          ink3: '#7C8B97'
         },
         fontFamily: {
           display: ['"Big Shoulders Display"', 'sans-serif'],
@@ -28,11 +28,11 @@
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js"></script>
 <style>
-  body { background: #121212; }
-  ::selection { background: #F2A93B; color: #121212; }
+  body { background: #E9F1F8; }
+  ::selection { background: #1B6FA8; color: #FFFFFF; }
   .tabular { font-variant-numeric: tabular-nums; }
   .focus-ring:focus-visible {
-    outline: 2px solid #F2A93B;
+    outline: 2px solid #1B6FA8;
     outline-offset: 2px;
   }
   @keyframes fadeInUp {
@@ -154,7 +154,7 @@ function FlapChar({ char, size = 'md', dim = false }) {
   if (char === ' ') return <span className="inline-block w-2" aria-hidden="true" />;
   if (!/[A-Za-z0-9]/.test(char)) {
     const punctSize = size === 'lg' ? 'text-3xl px-0.5' : size === 'sm' ? 'text-sm px-0.5' : 'text-lg px-0.5';
-    return <span className={`font-display font-black text-amber/60 ${punctSize}`}>{char}</span>;
+    return <span className={`font-display font-black text-accent/60 ${punctSize}`}>{char}</span>;
   }
   const sizing =
     size === 'lg'
@@ -165,9 +165,9 @@ function FlapChar({ char, size = 'md', dim = false }) {
   return (
     <span
       className={`relative inline-flex items-center justify-center rounded-[3px] bg-tile font-display font-black leading-none ${sizing} ${
-        dim ? 'text-amberDim' : 'text-amber'
+        dim ? 'text-accentDim' : 'text-accent'
       }`}
-      style={{ boxShadow: 'inset 0 -3px 0 rgba(0,0,0,0.45), inset 0 2px 0 rgba(255,255,255,0.04)' }}
+      style={{ boxShadow: 'inset 0 -3px 0 rgba(0,0,0,0.10), inset 0 1px 0 rgba(0,0,0,0.05)' }}
     >
       {char}
       <span className="absolute left-0 right-0 top-1/2 h-px bg-seam/80 -translate-y-px pointer-events-none" />
@@ -244,7 +244,7 @@ function AlarmRow({ alarm, onToggle, onDelete, onEdit, onRing, style }) {
               <span
                 key={i}
                 className={`w-4 h-4 rounded-sm flex items-center justify-center text-[9px] font-mono font-bold ${
-                  alarm.days.includes(i) ? 'bg-amber/20 text-amber' : 'bg-tile text-ink3'
+                  alarm.days.includes(i) ? 'bg-accent/20 text-accent' : 'bg-tile text-ink3'
                 }`}
               >
                 {d}
@@ -269,7 +269,7 @@ function AlarmRow({ alarm, onToggle, onDelete, onEdit, onRing, style }) {
           aria-label={alarm.enabled ? 'Disable alarm' : 'Enable alarm'}
           onClick={() => onToggle(alarm.id)}
           className={`focus-ring w-11 h-6 rounded-full border transition-colors duration-200 relative shrink-0 ${
-            alarm.enabled ? 'bg-amber border-amber' : 'bg-tile border-seam'
+            alarm.enabled ? 'bg-accent border-accent' : 'bg-tile border-seam'
           }`}
         >
           <span
@@ -284,7 +284,7 @@ function AlarmRow({ alarm, onToggle, onDelete, onEdit, onRing, style }) {
             type="button"
             aria-label="Preview ring"
             onClick={onRing}
-            className="focus-ring w-8 h-8 rounded flex items-center justify-center text-ink3 hover:text-amber hover:bg-tile transition-colors duration-200"
+            className="focus-ring w-8 h-8 rounded flex items-center justify-center text-ink3 hover:text-accent hover:bg-tile transition-colors duration-200"
           >
             <Bell size={15} />
           </button>
@@ -292,7 +292,7 @@ function AlarmRow({ alarm, onToggle, onDelete, onEdit, onRing, style }) {
             type="button"
             aria-label="Edit alarm"
             onClick={onEdit}
-            className="focus-ring w-8 h-8 rounded flex items-center justify-center text-ink3 hover:text-amber hover:bg-tile transition-colors duration-200"
+            className="focus-ring w-8 h-8 rounded flex items-center justify-center text-ink3 hover:text-accent hover:bg-tile transition-colors duration-200"
           >
             <Pencil size={15} />
           </button>
@@ -353,14 +353,14 @@ function AlarmModal({ existing, onClose, onSave }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-5 pb-4 border-b border-tile">
-          <h3 className="font-display font-black text-base tracking-wide text-amber uppercase">
+          <h3 className="font-display font-black text-base tracking-wide text-accent uppercase">
             {existing ? 'Edit entry' : 'New entry'}
           </h3>
           <button
             type="button"
             aria-label="Close"
             onClick={onClose}
-            className="focus-ring w-8 h-8 rounded flex items-center justify-center text-ink3 hover:text-amber hover:bg-tile transition-colors duration-200"
+            className="focus-ring w-8 h-8 rounded flex items-center justify-center text-ink3 hover:text-accent hover:bg-tile transition-colors duration-200"
           >
             <X size={16} />
           </button>
@@ -374,8 +374,8 @@ function AlarmModal({ existing, onClose, onSave }) {
                 type="time"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-                style={{ colorScheme: 'dark' }}
-                className="w-full rounded bg-tile border border-tile px-3 py-2 text-sm text-amber focus:outline-none focus:border-amber transition-colors duration-200"
+                style={{ colorScheme: 'light' }}
+                className="w-full rounded bg-tile border border-tile px-3 py-2 text-sm text-accent focus:outline-none focus:border-accent transition-colors duration-200"
               />
             </label>
             <label className="flex-1">
@@ -388,7 +388,7 @@ function AlarmModal({ existing, onClose, onSave }) {
                   step="1"
                   value={stake}
                   onChange={(e) => setStake(e.target.value)}
-                  className="w-full rounded bg-tile border border-tile pl-6 pr-3 py-2 text-sm text-risk focus:outline-none focus:border-amber transition-colors duration-200"
+                  className="w-full rounded bg-tile border border-tile pl-6 pr-3 py-2 text-sm text-risk focus:outline-none focus:border-accent transition-colors duration-200"
                 />
               </div>
             </label>
@@ -401,7 +401,7 @@ function AlarmModal({ existing, onClose, onSave }) {
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               placeholder="Gym before work"
-              className="w-full rounded bg-tile border border-tile px-3 py-2 text-sm text-ink2 placeholder:text-ink3/60 focus:outline-none focus:border-amber transition-colors duration-200"
+              className="w-full rounded bg-tile border border-tile px-3 py-2 text-sm text-ink2 placeholder:text-ink3/60 focus:outline-none focus:border-accent transition-colors duration-200"
             />
           </label>
 
@@ -414,7 +414,7 @@ function AlarmModal({ existing, onClose, onSave }) {
                   type="button"
                   onClick={() => toggleDay(i)}
                   className={`focus-ring w-8 h-8 rounded text-xs font-bold transition-colors duration-200 ${
-                    days.includes(i) ? 'bg-amber text-board' : 'bg-tile text-ink3 hover:text-ink2'
+                    days.includes(i) ? 'bg-accent text-board' : 'bg-tile text-ink3 hover:text-ink2'
                   }`}
                 >
                   {d}
@@ -434,7 +434,7 @@ function AlarmModal({ existing, onClose, onSave }) {
                   onClick={() => setChallengeType(c.value)}
                   className={`focus-ring rounded py-1.5 text-xs font-semibold uppercase tracking-wide transition-colors duration-200 border ${
                     challengeType === c.value
-                      ? 'bg-amber/20 text-amber border-amber/50'
+                      ? 'bg-accent/20 text-accent border-accent/50'
                       : 'bg-tile text-ink3 border-transparent hover:text-ink2'
                   }`}
                 >
@@ -449,14 +449,14 @@ function AlarmModal({ existing, onClose, onSave }) {
           <div className="flex items-center gap-2 mt-2">
             <button
               type="submit"
-              className="focus-ring flex-1 rounded bg-amber text-board font-display font-black text-sm uppercase tracking-wide py-2.5 hover:bg-amber/90 hover:scale-105 transition-all duration-200"
+              className="focus-ring flex-1 rounded bg-accent text-board font-display font-black text-sm uppercase tracking-wide py-2.5 hover:bg-accent/90 hover:scale-105 transition-all duration-200"
             >
               Save alarm
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="focus-ring rounded border border-tile text-ink2 font-medium text-sm px-5 py-2.5 hover:text-amber hover:border-amber/40 transition-colors duration-200"
+              className="focus-ring rounded border border-tile text-ink2 font-medium text-sm px-5 py-2.5 hover:text-accent hover:border-accent/40 transition-colors duration-200"
             >
               Cancel
             </button>
@@ -507,7 +507,7 @@ function RingingScreen({ alarm, onResolve }) {
         <div className="mx-auto w-16 h-16 rounded-full bg-risk/15 border-2 border-risk flex items-center justify-center text-risk animate-pulse">
           <Bell size={26} strokeWidth={1.8} />
         </div>
-        <h1 className="font-display font-black text-3xl uppercase tracking-wide text-amber mt-6">Wake up</h1>
+        <h1 className="font-display font-black text-3xl uppercase tracking-wide text-accent mt-6">Wake up</h1>
         <p className="text-ink3 text-sm mt-2">{alarm.label || 'Alarm'}</p>
 
         <div className="inline-flex items-center gap-2 border-2 border-risk rounded px-4 py-1.5 mt-4">
@@ -527,7 +527,7 @@ function RingingScreen({ alarm, onResolve }) {
             value={answer}
             onChange={handleChange}
             autoFocus
-            className="w-full rounded bg-tile border-2 border-tile px-4 py-2.5 text-center text-amber font-mono focus:outline-none focus:border-amber transition-colors duration-200"
+            className="w-full rounded bg-tile border-2 border-tile px-4 py-2.5 text-center text-accent font-mono focus:outline-none focus:border-accent transition-colors duration-200"
             placeholder="Your answer"
           />
           {feedback && (
@@ -541,7 +541,7 @@ function RingingScreen({ alarm, onResolve }) {
           )}
           <button
             type="submit"
-            className="focus-ring w-full rounded bg-amber text-board font-display font-black uppercase tracking-wide text-sm py-2.5 mt-4 hover:bg-amber/90 hover:scale-105 transition-all duration-200"
+            className="focus-ring w-full rounded bg-accent text-board font-display font-black uppercase tracking-wide text-sm py-2.5 mt-4 hover:bg-accent/90 hover:scale-105 transition-all duration-200"
           >
             Submit
           </button>
@@ -636,13 +636,13 @@ function App() {
 
   return (
     <div className="min-h-screen bg-board font-mono text-ink2">
-      <header className="border-b-2 border-amber/25">
+      <header className="border-b-2 border-accent/25">
         <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded bg-tile border border-amber/30 flex items-center justify-center text-amber">
+            <div className="w-9 h-9 rounded bg-tile border border-accent/30 flex items-center justify-center text-accent">
               <Bell size={16} strokeWidth={2} />
             </div>
-            <span className="font-display font-black text-lg tracking-wide text-amber uppercase">
+            <span className="font-display font-black text-lg tracking-wide text-accent uppercase">
               Stake Alarm
             </span>
           </div>
@@ -654,7 +654,7 @@ function App() {
             <button
               type="button"
               aria-label="Settings"
-              className="focus-ring w-9 h-9 rounded border border-tile flex items-center justify-center text-ink3 hover:text-amber hover:border-amber/40 transition-colors duration-200"
+              className="focus-ring w-9 h-9 rounded border border-tile flex items-center justify-center text-ink3 hover:text-accent hover:border-accent/40 transition-colors duration-200"
             >
               <Settings size={17} />
             </button>
@@ -670,7 +670,7 @@ function App() {
             <button
               type="button"
               onClick={() => setBalance((b) => b + 50)}
-              className="focus-ring rounded bg-amber text-board font-display font-black text-sm uppercase tracking-wide px-5 py-2.5 hover:bg-amber/90 hover:scale-105 transition-all duration-200"
+              className="focus-ring rounded bg-accent text-board font-display font-black text-sm uppercase tracking-wide px-5 py-2.5 hover:bg-accent/90 hover:scale-105 transition-all duration-200"
             >
               Deposit funds
             </button>
@@ -685,20 +685,20 @@ function App() {
                 <StatIcon size={13} />
                 <span className="text-[10px] uppercase tracking-widest">{label}</span>
               </div>
-              <p className="font-display font-black text-2xl text-amber tabular">{value}</p>
+              <p className="font-display font-black text-2xl text-accent tabular">{value}</p>
             </div>
           ))}
         </div>
 
         <div className="mt-10">
-          <div className="flex items-center justify-between border-b-2 border-amber/25 pb-3">
+          <div className="flex items-center justify-between border-b-2 border-accent/25 pb-3">
             <h2 className="font-display font-black text-sm tracking-[0.2em] text-ink2 uppercase">
               Alarms · Manifest
             </h2>
             <button
               type="button"
               onClick={openAddModal}
-              className="focus-ring flex items-center gap-1.5 rounded bg-amber/15 border border-amber/40 text-amber text-xs font-mono font-semibold uppercase tracking-wide px-3.5 py-1.5 hover:bg-amber/25 hover:scale-105 transition-all duration-200"
+              className="focus-ring flex items-center gap-1.5 rounded bg-accent/15 border border-accent/40 text-accent text-xs font-mono font-semibold uppercase tracking-wide px-3.5 py-1.5 hover:bg-accent/25 hover:scale-105 transition-all duration-200"
             >
               <Plus size={13} strokeWidth={2.2} />
               Add alarm
