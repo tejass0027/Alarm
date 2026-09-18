@@ -1,8 +1,13 @@
 # Stake Alarm — web UI concept
 
-A single-file, buildless React + Tailwind CSS mockup of the Stake Alarm interface. Open
-[index.html](index.html) directly in a browser — it loads React, Tailwind, and Babel from
-a CDN and compiles the JSX in-page, so no `npm install` or build step is needed.
+A buildless mockup of the Stake Alarm interface, split into two static files:
+
+- [index.html](index.html) — the landing page a visitor sees first: the pitch, a "how it
+  works" walkthrough, and a static preview of the app's own cards. Plain HTML + Tailwind,
+  no React needed since nothing on it is interactive.
+- [app.html](app.html) — the actual dashboard (what "Open the app" links to). A
+  single-file React + Tailwind mockup that loads React, Tailwind, and Babel from a CDN
+  and compiles its JSX in-page, so no `npm install` or build step is needed.
 
 This is a design concept, not a wired-up app: no backend, no persistence.
 
@@ -28,9 +33,10 @@ before landing on this blue one. Each rebuild kept the same underlying React sta
 interaction logic (toggle, add/edit, delete, deposit, the ringing/challenge flow) — only
 the visual layer changed.
 
-Icons are hand-inlined to match the `lucide-react` API (`size`, `strokeWidth`, `className`
-props) so the file runs standalone. Dropping this into a real React project just means
-deleting the icon block at the top of the script and importing from `lucide-react` instead.
+Icons are hand-inlined (in both files) to match the `lucide-react` API (`size`,
+`strokeWidth`, `className` props) so `app.html` runs standalone. Dropping it into a real
+React project just means deleting the icon block at the top of the script and importing
+from `lucide-react` instead.
 
 ## Streak-gated withdrawals
 

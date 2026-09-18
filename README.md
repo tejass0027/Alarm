@@ -50,10 +50,13 @@ lose the stake.
 ## Web UI concept
 
 A design concept for what a Stake Alarm web app could look like: a warm,
-rounded, playful interface (think Duolingo or Headspace) with alarm cards
-you can add/edit/delete/toggle. A "Preview" button per card triggers the
-full-screen ringing/challenge view, since there's no real scheduling behind
-it — it's a visual and interaction mockup, not a persisted, wired-up app.
+rounded, playful interface (think Duolingo or Headspace). Visiting the site
+lands on [web/index.html](web/index.html), a pitch page explaining the
+concept; "Open the app"/"Get started" leads to [web/app.html](web/app.html),
+the actual dashboard with alarm cards you can add/edit/delete/toggle. A
+"Preview" button per card triggers the full-screen ringing/challenge view,
+since there's no real scheduling behind it — it's a visual and interaction
+mockup, not a persisted, wired-up app.
 
 It also models a real product rule: solving an alarm builds a streak, giving
 up resets it, and withdrawing your balance is locked until you reach a

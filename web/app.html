@@ -1,0 +1,781 @@
+<meta charset="UTF-8">
+<title>Stake Alarm</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cream: '#FFF8F0',
+          card: '#FFFFFF',
+          azure: '#2F6FED',
+          azureSoft: '#DCE9FE',
+          green: '#3FBE72',
+          greenSoft: '#DFF7E6',
+          red: '#E5484D',
+          redSoft: '#FDE1E1',
+          ink: '#3D2C29',
+          ink2: '#8B7E78',
+          ink3: '#C4B8B0'
+        },
+        fontFamily: {
+          display: ['Fredoka', 'sans-serif'],
+          body: ['Nunito', 'sans-serif']
+        }
+      }
+    }
+  };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js"></script>
+<style>
+  body { background: #FFF8F0; }
+  ::selection { background: #2F6FED; color: #FFFFFF; }
+  .tabular { font-variant-numeric: tabular-nums; }
+  .focus-ring:focus-visible {
+    outline: 3px solid #2F6FED;
+    outline-offset: 2px;
+  }
+  @keyframes popIn {
+    0% { opacity: 0; transform: scale(0.9) translateY(6px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.94); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes bounceIn {
+    0% { transform: scale(0.6); opacity: 0; }
+    60% { transform: scale(1.08); opacity: 1; }
+    100% { transform: scale(1); }
+  }
+  .animate-pop-in { animation: popIn 0.3s ease-out both; }
+  .animate-modal-in { animation: modalIn 0.2s ease-out both; }
+  .animate-bounce-in { animation: bounceIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+  @media (prefers-reduced-motion: reduce) {
+    .animate-pop-in, .animate-modal-in, .animate-bounce-in, .animate-pulse {
+      animation: none !important;
+    }
+  }
+</style>
+
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState } = React;
+
+/*
+  Icons below are hand-inlined to match the lucide-react API (size / strokeWidth /
+  className props, 24x24 stroke paths) so this file runs standalone with no build
+  step. In a real project, delete this block and use:
+  import { Bell, Settings, Clock, Wallet, TrendingUp, Pencil, Trash2, X, Plus, AlertTriangle, Flame, Check, Lock } from 'lucide-react';
+*/
+function Icon({ children, size = 20, strokeWidth = 2, className = '', ...rest }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      {...rest}
+    >
+      {children}
+    </svg>
+  );
+}
+const Bell = (p) => (
+  <Icon {...p}>
+    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+    <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+  </Icon>
+);
+const Settings = (p) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="3" />
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" />
+  </Icon>
+);
+const Clock = (p) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
+  </Icon>
+);
+const Wallet = (p) => (
+  <Icon {...p}>
+    <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4" />
+    <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />
+    <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
+  </Icon>
+);
+const TrendingUp = (p) => (
+  <Icon {...p}>
+    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+    <polyline points="16 7 22 7 22 13" />
+  </Icon>
+);
+const Pencil = (p) => (
+  <Icon {...p}>
+    <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .622.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
+    <path d="m15 5 4 4" />
+  </Icon>
+);
+const Trash2 = (p) => (
+  <Icon {...p}>
+    <path d="M3 6h18" />
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    <line x1="10" y1="11" x2="10" y2="17" />
+    <line x1="14" y1="11" x2="14" y2="17" />
+  </Icon>
+);
+const X = (p) => (
+  <Icon {...p}>
+    <path d="M18 6 6 18" />
+    <path d="m6 6 12 12" />
+  </Icon>
+);
+const Plus = (p) => (
+  <Icon {...p}>
+    <path d="M5 12h14" />
+    <path d="M12 5v14" />
+  </Icon>
+);
+const AlertTriangle = (p) => (
+  <Icon {...p}>
+    <path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+    <line x1="12" y1="9" x2="12" y2="13" />
+    <line x1="12" y1="17" x2="12.01" y2="17" />
+  </Icon>
+);
+const Flame = (p) => (
+  <Icon {...p}>
+    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+  </Icon>
+);
+const Check = (p) => (
+  <Icon {...p}>
+    <polyline points="20 6 9 17 4 12" />
+  </Icon>
+);
+const Lock = (p) => (
+  <Icon {...p}>
+    <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+  </Icon>
+);
+
+const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+const CHALLENGE_TYPES = [
+  { value: 'random', label: 'Random' },
+  { value: 'math', label: 'Math' },
+  { value: 'typing', label: 'Typing' }
+];
+const TYPING_PHRASES = [
+  'the early bird catches the worm',
+  'discipline beats motivation',
+  'get up and seize the day',
+  'consistency is the real secret'
+];
+
+function generateChallenge(type) {
+  const kind = type === 'random' ? (Math.random() < 0.5 ? 'math' : 'typing') : type;
+  if (kind === 'typing') {
+    const phrase = TYPING_PHRASES[Math.floor(Math.random() * TYPING_PHRASES.length)];
+    return {
+      prompt: `Type this exactly:\n"${phrase}"`,
+      check: (answer) => answer.trim().toLowerCase() === phrase.toLowerCase()
+    };
+  }
+  const ops = ['+', '-', '*'];
+  const op = ops[Math.floor(Math.random() * ops.length)];
+  let x = Math.floor(Math.random() * 40) + 1;
+  let y = Math.floor(Math.random() * 40) + 1;
+  if (op === '-' && y > x) {
+    [x, y] = [y, x];
+  }
+  const answer = op === '+' ? x + y : op === '-' ? x - y : x * y;
+  return {
+    prompt: `What is ${x} ${op} ${y} ?`,
+    check: (input) => Number(input.trim()) === answer
+  };
+}
+
+function AlarmCard({ alarm, onToggle, onDelete, onEdit, onRing, style }) {
+  const hasRepeat = alarm.days.length > 0;
+  return (
+    <div
+      style={style}
+      className={`animate-pop-in rounded-3xl bg-card p-5 shadow-[0_6px_20px_rgba(61,44,41,0.08)] hover:shadow-[0_10px_28px_rgba(61,44,41,0.14)] hover:-translate-y-0.5 transition-all duration-200 ${
+        alarm.enabled ? '' : 'opacity-60'
+      }`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="font-display tabular text-4xl font-semibold text-ink">{alarm.time}</p>
+          <p className="text-ink2 text-sm font-semibold mt-1">{alarm.label || 'Unlabeled'}</p>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={alarm.enabled}
+          aria-label={alarm.enabled ? 'Disable alarm' : 'Enable alarm'}
+          onClick={() => onToggle(alarm.id)}
+          className={`focus-ring w-12 h-7 rounded-full transition-colors duration-200 relative shrink-0 active:scale-95 ${
+            alarm.enabled ? 'bg-azure' : 'bg-ink3/40'
+          }`}
+        >
+          <span
+            className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ${
+              alarm.enabled ? 'translate-x-5' : 'translate-x-0'
+            }`}
+          />
+        </button>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2 mt-4">
+        <span className="rounded-full bg-redSoft text-red px-3 py-1.5 text-xs font-extrabold">
+          ${alarm.stake} at stake
+        </span>
+        {hasRepeat ? (
+          <div className="flex items-center gap-1">
+            {DAY_LABELS.map((d, i) => (
+              <span
+                key={i}
+                className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-extrabold ${
+                  alarm.days.includes(i) ? 'bg-azureSoft text-azure' : 'bg-cream text-ink3'
+                }`}
+              >
+                {d}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <span className="rounded-full bg-cream text-ink3 px-3 py-1.5 text-xs font-bold">One-time</span>
+        )}
+      </div>
+
+      <div className="flex items-center gap-1.5 mt-4 pt-4 border-t-2 border-cream">
+        <button
+          type="button"
+          aria-label="Preview ring"
+          onClick={onRing}
+          className="focus-ring w-9 h-9 rounded-full flex items-center justify-center text-ink2 bg-cream hover:bg-azureSoft hover:text-azure transition-colors duration-200 active:scale-90"
+        >
+          <Bell size={15} />
+        </button>
+        <button
+          type="button"
+          aria-label="Edit alarm"
+          onClick={onEdit}
+          className="focus-ring w-9 h-9 rounded-full flex items-center justify-center text-ink2 bg-cream hover:bg-azureSoft hover:text-azure transition-colors duration-200 active:scale-90"
+        >
+          <Pencil size={15} />
+        </button>
+        <button
+          type="button"
+          aria-label="Delete alarm"
+          onClick={() => onDelete(alarm.id)}
+          className="focus-ring w-9 h-9 rounded-full flex items-center justify-center text-ink2 bg-cream hover:bg-redSoft hover:text-red transition-colors duration-200 active:scale-90"
+        >
+          <Trash2 size={15} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function AlarmModal({ existing, onClose, onSave }) {
+  const [time, setTime] = useState(existing?.time ?? '07:00');
+  const [label, setLabel] = useState(existing?.label ?? '');
+  const [stake, setStake] = useState(existing ? String(existing.stake) : '5');
+  const [days, setDays] = useState(existing?.days ?? []);
+  const [challengeType, setChallengeType] = useState(existing?.challengeType ?? 'random');
+  const [error, setError] = useState('');
+
+  const toggleDay = (i) =>
+    setDays((prev) => (prev.includes(i) ? prev.filter((d) => d !== i) : [...prev, i].sort()));
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const stakeNumber = Number(stake);
+    if (!time) {
+      setError('Pick a time for the alarm.');
+      return;
+    }
+    if (!stakeNumber || stakeNumber <= 0) {
+      setError('Stake must be greater than $0.');
+      return;
+    }
+    onSave({
+      id: existing?.id ?? Date.now(),
+      enabled: existing?.enabled ?? true,
+      time,
+      label: label.trim(),
+      stake: stakeNumber,
+      days,
+      challengeType
+    });
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 backdrop-blur-sm p-4"
+      onClick={onClose}
+    >
+      <div
+        className="animate-modal-in w-full max-w-md rounded-[28px] bg-card p-6 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="font-display font-semibold text-xl text-ink">
+            {existing ? 'Edit alarm' : 'New alarm'}
+          </h3>
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={onClose}
+            className="focus-ring w-9 h-9 rounded-full flex items-center justify-center text-ink2 bg-cream hover:bg-redSoft hover:text-red transition-colors duration-200 active:scale-90"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 font-body">
+          <div className="flex gap-3">
+            <label className="flex-1">
+              <span className="block text-xs text-ink2 font-bold uppercase tracking-wide mb-1.5">Time</span>
+              <input
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="w-full rounded-2xl bg-cream border-2 border-transparent px-4 py-2.5 text-sm font-bold text-ink focus:outline-none focus:border-azure transition-colors duration-200"
+              />
+            </label>
+            <label className="flex-1">
+              <span className="block text-xs text-ink2 font-bold uppercase tracking-wide mb-1.5">Stake</span>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-ink3 text-sm font-bold">$</span>
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={stake}
+                  onChange={(e) => setStake(e.target.value)}
+                  className="w-full rounded-2xl bg-cream border-2 border-transparent pl-7 pr-4 py-2.5 text-sm font-bold text-red focus:outline-none focus:border-azure transition-colors duration-200"
+                />
+              </div>
+            </label>
+          </div>
+
+          <label>
+            <span className="block text-xs text-ink2 font-bold uppercase tracking-wide mb-1.5">Label</span>
+            <input
+              type="text"
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              placeholder="Gym before work"
+              className="w-full rounded-2xl bg-cream border-2 border-transparent px-4 py-2.5 text-sm font-bold text-ink placeholder:text-ink3 placeholder:font-normal focus:outline-none focus:border-azure transition-colors duration-200"
+            />
+          </label>
+
+          <div>
+            <span className="block text-xs text-ink2 font-bold uppercase tracking-wide mb-1.5">Repeat on</span>
+            <div className="flex items-center gap-1.5">
+              {DAY_LABELS.map((d, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => toggleDay(i)}
+                  className={`focus-ring w-9 h-9 rounded-full text-xs font-extrabold transition-all duration-150 active:scale-90 ${
+                    days.includes(i) ? 'bg-azure text-white' : 'bg-cream text-ink3 hover:text-ink2'
+                  }`}
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
+            <p className="text-ink3 text-[11px] font-semibold mt-1.5">Leave all unselected for a one-time alarm.</p>
+          </div>
+
+          <div>
+            <span className="block text-xs text-ink2 font-bold uppercase tracking-wide mb-1.5">Challenge</span>
+            <div className="grid grid-cols-3 gap-1.5">
+              {CHALLENGE_TYPES.map((c) => (
+                <button
+                  key={c.value}
+                  type="button"
+                  onClick={() => setChallengeType(c.value)}
+                  className={`focus-ring rounded-full py-2 text-xs font-extrabold transition-all duration-150 active:scale-95 ${
+                    challengeType === c.value ? 'bg-azure text-white' : 'bg-cream text-ink3 hover:text-ink2'
+                  }`}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {error && <p className="text-red text-xs font-bold">{error}</p>}
+
+          <div className="flex items-center gap-2 mt-2">
+            <button
+              type="submit"
+              className="focus-ring flex-1 rounded-full bg-azure text-white font-display font-semibold text-base py-3 hover:brightness-105 active:scale-95 transition-all duration-150 shadow-[0_6px_16px_rgba(47,111,237,0.4)]"
+            >
+              Save alarm
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="focus-ring rounded-full bg-cream text-ink2 font-bold text-sm px-5 py-3 hover:bg-ink3/20 active:scale-95 transition-all duration-150"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function RingingScreen({ alarm, onResolve }) {
+  const rounds = 2;
+  const [round, setRound] = useState(1);
+  const [challenge, setChallenge] = useState(() => generateChallenge(alarm.challengeType));
+  const [answer, setAnswer] = useState('');
+  const [feedback, setFeedback] = useState(null);
+  const [confirmingGiveUp, setConfirmingGiveUp] = useState(false);
+
+  const handleChange = (e) => {
+    setAnswer(e.target.value);
+    setFeedback(null);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!answer.trim()) {
+      setFeedback({ type: 'error', text: 'Enter an answer first!' });
+      return;
+    }
+    if (challenge.check(answer)) {
+      if (round >= rounds) {
+        onResolve('solved');
+        return;
+      }
+      setFeedback({ type: 'success', text: 'Nice! One more to go.' });
+      setRound((r) => r + 1);
+      setChallenge(generateChallenge(alarm.challengeType));
+      setAnswer('');
+    } else {
+      setFeedback({ type: 'error', text: 'Not quite, try again!' });
+      setAnswer('');
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-cream font-body text-ink flex items-center justify-center p-6">
+      <div className="w-full max-w-sm text-center">
+        <div className="mx-auto w-20 h-20 rounded-full bg-azureSoft flex items-center justify-center text-azure animate-pulse">
+          <Bell size={32} strokeWidth={2} />
+        </div>
+        <h1 className="font-display font-semibold text-4xl text-ink mt-6">Rise and shine!</h1>
+        <p className="text-ink2 font-bold text-sm mt-2">{alarm.label || 'Alarm'}</p>
+
+        <div className="inline-flex items-center gap-2 bg-redSoft rounded-full px-4 py-2 mt-4">
+          <AlertTriangle size={14} className="text-red" />
+          <span className="text-red text-sm font-extrabold">${alarm.stake} at stake</span>
+        </div>
+
+        <p className="text-ink3 text-xs font-bold mt-8 uppercase tracking-wide">
+          Round {round} of {rounds}
+        </p>
+        <p className="font-display font-semibold text-2xl mt-3 whitespace-pre-line text-ink">{challenge.prompt}</p>
+
+        <form onSubmit={handleSubmit} className="mt-5">
+          <input
+            type="text"
+            value={answer}
+            onChange={handleChange}
+            autoFocus
+            className="w-full rounded-2xl bg-white border-2 border-transparent px-4 py-3 text-center text-lg font-bold text-ink shadow-inner focus:outline-none focus:border-azure transition-colors duration-200"
+            placeholder="Your answer"
+          />
+          {feedback && (
+            <p
+              key={feedback.text}
+              className={`animate-bounce-in text-sm font-extrabold mt-3 ${
+                feedback.type === 'success' ? 'text-green' : 'text-red'
+              }`}
+            >
+              {feedback.type === 'success' && <Check size={14} className="inline mr-1 -mt-0.5" />}
+              {feedback.text}
+            </p>
+          )}
+          <button
+            type="submit"
+            className="focus-ring w-full rounded-full bg-azure text-white font-display font-semibold text-lg py-3.5 mt-4 hover:brightness-105 active:scale-95 transition-all duration-150 shadow-[0_8px_20px_rgba(47,111,237,0.4)]"
+          >
+            Submit
+          </button>
+        </form>
+
+        <div className="mt-6">
+          {confirmingGiveUp ? (
+            <div className="flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => onResolve('gave_up')}
+                className="focus-ring rounded-full bg-red text-white text-xs font-extrabold px-5 py-2.5 active:scale-95 transition-all duration-150"
+              >
+                Confirm — lose ${alarm.stake}
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmingGiveUp(false)}
+                className="focus-ring text-ink3 text-xs font-bold hover:text-ink2 transition-colors duration-200"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmingGiveUp(true)}
+              className="focus-ring text-ink3 text-xs font-bold uppercase tracking-wide hover:text-red transition-colors duration-200"
+            >
+              Give up (lose stake)
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const STREAK_GOAL = 21;
+
+function App() {
+  const [balance, setBalance] = useState(482.5);
+  const [streak, setStreak] = useState(18);
+  const [alarms, setAlarms] = useState([
+    { id: 1, time: '06:30', label: 'Gym before work', stake: 15, days: [0, 1, 2, 3, 4], enabled: true },
+    { id: 2, time: '08:00', label: 'Sunday long run', stake: 10, days: [6], enabled: true },
+    { id: 3, time: '05:45', label: 'Flight to Denver', stake: 25, days: [], enabled: false }
+  ]);
+
+  const toggleAlarm = (id) =>
+    setAlarms((prev) => prev.map((a) => (a.id === id ? { ...a, enabled: !a.enabled } : a)));
+
+  const deleteAlarm = (id) => setAlarms((prev) => prev.filter((a) => a.id !== id));
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingAlarm, setEditingAlarm] = useState(null);
+
+  const openAddModal = () => {
+    setEditingAlarm(null);
+    setModalOpen(true);
+  };
+  const openEditModal = (alarm) => {
+    setEditingAlarm(alarm);
+    setModalOpen(true);
+  };
+  const closeModal = () => setModalOpen(false);
+  const saveAlarm = (alarm) => {
+    setAlarms((prev) => {
+      const exists = prev.some((a) => a.id === alarm.id);
+      return exists ? prev.map((a) => (a.id === alarm.id ? alarm : a)) : [...prev, alarm];
+    });
+    setModalOpen(false);
+  };
+
+  const activeCount = alarms.filter((a) => a.enabled).length;
+  const totalStaked = alarms.filter((a) => a.enabled).reduce((sum, a) => sum + a.stake, 0);
+
+  const stats = [
+    { label: 'Active', value: String(activeCount), Icon: Clock, tint: 'azure' },
+    { label: 'Staked', value: `$${totalStaked}`, Icon: Wallet, tint: 'red' },
+    { label: 'Win rate', value: '86%', Icon: TrendingUp, tint: 'green' }
+  ];
+  const tintClasses = {
+    azure: 'bg-azureSoft text-azure',
+    red: 'bg-redSoft text-red',
+    green: 'bg-greenSoft text-green'
+  };
+
+  const [ringingAlarm, setRingingAlarm] = useState(null);
+  const resolveRing = (result) => {
+    if (result === 'solved') {
+      setStreak((s) => s + 1);
+    } else if (result === 'gave_up' && ringingAlarm) {
+      setBalance((b) => b - ringingAlarm.stake);
+      setStreak(0);
+    }
+    setRingingAlarm(null);
+  };
+
+  const canWithdraw = streak >= STREAK_GOAL;
+  const [lockedNoticeKey, setLockedNoticeKey] = useState(0);
+  const withdraw = () => {
+    if (!canWithdraw) {
+      setLockedNoticeKey((k) => k + 1);
+      return;
+    }
+    setBalance((b) => Math.max(0, b - 50));
+  };
+
+  if (ringingAlarm) {
+    return <RingingScreen alarm={ringingAlarm} onResolve={resolveRing} />;
+  }
+
+  return (
+    <div className="min-h-screen bg-cream font-body text-ink">
+      <header className="sticky top-0 z-30 bg-cream/90 backdrop-blur-sm">
+        <div className="max-w-5xl mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-full bg-azure flex items-center justify-center text-white shadow-[0_4px_12px_rgba(47,111,237,0.4)]">
+              <Bell size={18} strokeWidth={2.2} />
+            </div>
+            <span className="font-display font-semibold text-xl text-ink">Stake Alarm</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:flex items-center gap-1.5 rounded-full bg-white px-4 py-2 shadow-[0_4px_14px_rgba(61,44,41,0.08)]">
+              <Wallet size={16} className="text-azure" />
+              <span className="tabular font-display font-semibold text-sm text-ink">${balance.toFixed(2)}</span>
+            </div>
+            <button
+              type="button"
+              aria-label="Settings"
+              className="focus-ring w-10 h-10 rounded-full bg-white flex items-center justify-center text-ink2 hover:text-azure shadow-[0_4px_14px_rgba(61,44,41,0.08)] transition-colors duration-200 active:scale-90"
+            >
+              <Settings size={18} />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-5xl mx-auto px-6 py-6">
+        <div className="rounded-[28px] bg-gradient-to-br from-azure to-[#6FA0FA] p-7 text-white shadow-[0_12px_32px_rgba(47,111,237,0.35)]">
+          <div className="flex items-start justify-between gap-3">
+            <p className="text-white/80 font-bold text-sm">Available to stake</p>
+            <div className="flex items-center gap-1.5 bg-white/20 rounded-full px-3 py-1.5 shrink-0">
+              <Flame size={14} />
+              <span className="tabular text-xs font-extrabold">{streak}-day streak</span>
+            </div>
+          </div>
+          <p className="font-display tabular text-5xl sm:text-6xl font-semibold mt-2">${balance.toFixed(2)}</p>
+
+          <div className="mt-5 max-w-xs">
+            <div className="flex items-center justify-between text-xs font-bold text-white/80 mb-1.5">
+              <span>Streak to unlock withdrawals</span>
+              <span className="tabular">
+                {Math.min(streak, STREAK_GOAL)}/{STREAK_GOAL}
+              </span>
+            </div>
+            <div className="w-full h-2 rounded-full bg-white/25 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-white transition-all duration-300"
+                style={{ width: `${Math.min(100, (streak / STREAK_GOAL) * 100)}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 mt-6">
+            <button
+              type="button"
+              onClick={() => setBalance((b) => b + 50)}
+              className="focus-ring rounded-full bg-white text-azure font-display font-semibold text-sm px-6 py-3 hover:brightness-95 active:scale-95 transition-all duration-150 shadow-lg"
+            >
+              Deposit funds
+            </button>
+            <button
+              type="button"
+              onClick={withdraw}
+              aria-disabled={!canWithdraw}
+              className={`focus-ring rounded-full font-display font-semibold text-sm px-6 py-3 transition-all duration-150 flex items-center gap-1.5 active:scale-95 ${
+                canWithdraw
+                  ? 'bg-white/90 text-azure hover:brightness-95 shadow-lg'
+                  : 'bg-white/15 text-white/60 hover:bg-white/20'
+              }`}
+            >
+              {!canWithdraw && <Lock size={13} />}
+              Withdraw funds
+            </button>
+          </div>
+          <p className="text-white/70 text-xs font-bold mt-3">Virtual balance — no real money moves.</p>
+          {canWithdraw ? (
+            <p className="text-white/70 text-xs font-bold mt-1">Withdrawals unlocked — cash out anytime.</p>
+          ) : lockedNoticeKey > 0 ? (
+            <p
+              key={lockedNoticeKey}
+              className="animate-bounce-in inline-flex items-center gap-1.5 bg-white/25 rounded-full px-3 py-1.5 text-xs font-extrabold mt-2"
+            >
+              <Lock size={12} />
+              Complete a {STREAK_GOAL}-day streak to withdraw your money.
+            </p>
+          ) : (
+            <p className="text-white/70 text-xs font-bold mt-1">
+              Reach a {STREAK_GOAL}-day streak to unlock withdrawals.
+            </p>
+          )}
+        </div>
+
+        <div className="grid grid-cols-3 gap-3 mt-4">
+          {stats.map(({ label, value, Icon: StatIcon, tint }) => (
+            <div key={label} className="rounded-3xl bg-white px-4 py-4 shadow-[0_4px_14px_rgba(61,44,41,0.08)]">
+              <div className={`w-9 h-9 rounded-full flex items-center justify-center mb-2 ${tintClasses[tint]}`}>
+                <StatIcon size={16} />
+              </div>
+              <p className="font-display tabular text-2xl font-semibold text-ink">{value}</p>
+              <p className="text-ink3 text-[11px] font-bold uppercase tracking-wide">{label}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-8">
+          <div className="flex items-center justify-between">
+            <h2 className="font-display font-semibold text-xl text-ink">Your alarms</h2>
+            <button
+              type="button"
+              onClick={openAddModal}
+              className="focus-ring flex items-center gap-1.5 rounded-full bg-azure text-white text-xs font-extrabold px-4 py-2.5 hover:brightness-105 active:scale-95 transition-all duration-150 shadow-[0_6px_16px_rgba(47,111,237,0.35)]"
+            >
+              <Plus size={13} strokeWidth={2.5} />
+              Add alarm
+            </button>
+          </div>
+          {alarms.length === 0 ? (
+            <p className="text-ink3 font-semibold text-sm mt-6">No alarms yet — add your first one!</p>
+          ) : (
+            <div className="grid sm:grid-cols-2 gap-4 mt-4">
+              {alarms.map((alarm, i) => (
+                <AlarmCard
+                  key={alarm.id}
+                  alarm={alarm}
+                  style={{ animationDelay: `${i * 60}ms` }}
+                  onToggle={toggleAlarm}
+                  onDelete={deleteAlarm}
+                  onEdit={() => openEditModal(alarm)}
+                  onRing={() => setRingingAlarm(alarm)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+
+      {modalOpen && <AlarmModal existing={editingAlarm} onClose={closeModal} onSave={saveAlarm} />}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
