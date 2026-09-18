@@ -3,8 +3,9 @@
 A buildless mockup of the Stake Alarm interface, split into two static files:
 
 - [index.html](index.html) — the landing page a visitor sees first: the pitch, a "how it
-  works" walkthrough, and a static preview of the app's own cards. Plain HTML + Tailwind,
-  no React needed since nothing on it is interactive.
+  works" walkthrough, a features grid, a before/after comparison, a short "why a stake
+  works" explainer, and an FAQ accordion (native `<details>`, no JS needed for it). Plain
+  HTML + Tailwind, no React since nothing on it needs component state.
 - [app.html](app.html) — the actual dashboard (what "Open the app" links to). A
   single-file React + Tailwind mockup that loads React, Tailwind, and Babel from a CDN
   and compiles its JSX in-page, so no `npm install` or build step is needed.
@@ -37,6 +38,16 @@ Icons are hand-inlined (in both files) to match the `lucide-react` API (`size`,
 `strokeWidth`, `className` props) so `app.html` runs standalone. Dropping it into a real
 React project just means deleting the icon block at the top of the script and importing
 from `lucide-react` instead.
+
+## Landing page motion
+
+Every animation is designed to be correct even if it doesn't play: the streak progress
+bar's fill percentage is its actual CSS width (the `@keyframes` only overrides the
+starting point), so a browser that disables animations (`prefers-reduced-motion:
+reduce`, which is respected explicitly) still shows the right final state — same for the
+hero's fade-up entrance and the floating decorative blob. Nothing on the page relies on
+scroll position or `IntersectionObserver` to reveal content, since a reveal-animation
+that never triggers would mean unreadable text.
 
 ## Streak-gated withdrawals
 
