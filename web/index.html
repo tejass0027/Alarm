@@ -11,8 +11,8 @@
         colors: {
           cream: '#FFF8F0',
           card: '#FFFFFF',
-          coral: '#FF7A59',
-          coralSoft: '#FFE4DB',
+          azure: '#2F6FED',
+          azureSoft: '#DCE9FE',
           green: '#3FBE72',
           greenSoft: '#DFF7E6',
           red: '#E5484D',
@@ -32,10 +32,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js"></script>
 <style>
   body { background: #FFF8F0; }
-  ::selection { background: #FF7A59; color: #FFFFFF; }
+  ::selection { background: #2F6FED; color: #FFFFFF; }
   .tabular { font-variant-numeric: tabular-nums; }
   .focus-ring:focus-visible {
-    outline: 3px solid #FF7A59;
+    outline: 3px solid #2F6FED;
     outline-offset: 2px;
   }
   @keyframes popIn {
@@ -224,7 +224,7 @@ function AlarmCard({ alarm, onToggle, onDelete, onEdit, onRing, style }) {
           aria-label={alarm.enabled ? 'Disable alarm' : 'Enable alarm'}
           onClick={() => onToggle(alarm.id)}
           className={`focus-ring w-12 h-7 rounded-full transition-colors duration-200 relative shrink-0 active:scale-95 ${
-            alarm.enabled ? 'bg-coral' : 'bg-ink3/40'
+            alarm.enabled ? 'bg-azure' : 'bg-ink3/40'
           }`}
         >
           <span
@@ -245,7 +245,7 @@ function AlarmCard({ alarm, onToggle, onDelete, onEdit, onRing, style }) {
               <span
                 key={i}
                 className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-extrabold ${
-                  alarm.days.includes(i) ? 'bg-coralSoft text-coral' : 'bg-cream text-ink3'
+                  alarm.days.includes(i) ? 'bg-azureSoft text-azure' : 'bg-cream text-ink3'
                 }`}
               >
                 {d}
@@ -262,7 +262,7 @@ function AlarmCard({ alarm, onToggle, onDelete, onEdit, onRing, style }) {
           type="button"
           aria-label="Preview ring"
           onClick={onRing}
-          className="focus-ring w-9 h-9 rounded-full flex items-center justify-center text-ink2 bg-cream hover:bg-coralSoft hover:text-coral transition-colors duration-200 active:scale-90"
+          className="focus-ring w-9 h-9 rounded-full flex items-center justify-center text-ink2 bg-cream hover:bg-azureSoft hover:text-azure transition-colors duration-200 active:scale-90"
         >
           <Bell size={15} />
         </button>
@@ -270,7 +270,7 @@ function AlarmCard({ alarm, onToggle, onDelete, onEdit, onRing, style }) {
           type="button"
           aria-label="Edit alarm"
           onClick={onEdit}
-          className="focus-ring w-9 h-9 rounded-full flex items-center justify-center text-ink2 bg-cream hover:bg-coralSoft hover:text-coral transition-colors duration-200 active:scale-90"
+          className="focus-ring w-9 h-9 rounded-full flex items-center justify-center text-ink2 bg-cream hover:bg-azureSoft hover:text-azure transition-colors duration-200 active:scale-90"
         >
           <Pencil size={15} />
         </button>
@@ -351,7 +351,7 @@ function AlarmModal({ existing, onClose, onSave }) {
                 type="time"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-                className="w-full rounded-2xl bg-cream border-2 border-transparent px-4 py-2.5 text-sm font-bold text-ink focus:outline-none focus:border-coral transition-colors duration-200"
+                className="w-full rounded-2xl bg-cream border-2 border-transparent px-4 py-2.5 text-sm font-bold text-ink focus:outline-none focus:border-azure transition-colors duration-200"
               />
             </label>
             <label className="flex-1">
@@ -364,7 +364,7 @@ function AlarmModal({ existing, onClose, onSave }) {
                   step="1"
                   value={stake}
                   onChange={(e) => setStake(e.target.value)}
-                  className="w-full rounded-2xl bg-cream border-2 border-transparent pl-7 pr-4 py-2.5 text-sm font-bold text-red focus:outline-none focus:border-coral transition-colors duration-200"
+                  className="w-full rounded-2xl bg-cream border-2 border-transparent pl-7 pr-4 py-2.5 text-sm font-bold text-red focus:outline-none focus:border-azure transition-colors duration-200"
                 />
               </div>
             </label>
@@ -377,7 +377,7 @@ function AlarmModal({ existing, onClose, onSave }) {
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               placeholder="Gym before work"
-              className="w-full rounded-2xl bg-cream border-2 border-transparent px-4 py-2.5 text-sm font-bold text-ink placeholder:text-ink3 placeholder:font-normal focus:outline-none focus:border-coral transition-colors duration-200"
+              className="w-full rounded-2xl bg-cream border-2 border-transparent px-4 py-2.5 text-sm font-bold text-ink placeholder:text-ink3 placeholder:font-normal focus:outline-none focus:border-azure transition-colors duration-200"
             />
           </label>
 
@@ -390,7 +390,7 @@ function AlarmModal({ existing, onClose, onSave }) {
                   type="button"
                   onClick={() => toggleDay(i)}
                   className={`focus-ring w-9 h-9 rounded-full text-xs font-extrabold transition-all duration-150 active:scale-90 ${
-                    days.includes(i) ? 'bg-coral text-white' : 'bg-cream text-ink3 hover:text-ink2'
+                    days.includes(i) ? 'bg-azure text-white' : 'bg-cream text-ink3 hover:text-ink2'
                   }`}
                 >
                   {d}
@@ -409,7 +409,7 @@ function AlarmModal({ existing, onClose, onSave }) {
                   type="button"
                   onClick={() => setChallengeType(c.value)}
                   className={`focus-ring rounded-full py-2 text-xs font-extrabold transition-all duration-150 active:scale-95 ${
-                    challengeType === c.value ? 'bg-coral text-white' : 'bg-cream text-ink3 hover:text-ink2'
+                    challengeType === c.value ? 'bg-azure text-white' : 'bg-cream text-ink3 hover:text-ink2'
                   }`}
                 >
                   {c.label}
@@ -423,7 +423,7 @@ function AlarmModal({ existing, onClose, onSave }) {
           <div className="flex items-center gap-2 mt-2">
             <button
               type="submit"
-              className="focus-ring flex-1 rounded-full bg-coral text-white font-display font-semibold text-base py-3 hover:brightness-105 active:scale-95 transition-all duration-150 shadow-[0_6px_16px_rgba(255,122,89,0.4)]"
+              className="focus-ring flex-1 rounded-full bg-azure text-white font-display font-semibold text-base py-3 hover:brightness-105 active:scale-95 transition-all duration-150 shadow-[0_6px_16px_rgba(47,111,237,0.4)]"
             >
               Save alarm
             </button>
@@ -478,7 +478,7 @@ function RingingScreen({ alarm, onResolve }) {
   return (
     <div className="min-h-screen bg-cream font-body text-ink flex items-center justify-center p-6">
       <div className="w-full max-w-sm text-center">
-        <div className="mx-auto w-20 h-20 rounded-full bg-coralSoft flex items-center justify-center text-coral animate-pulse">
+        <div className="mx-auto w-20 h-20 rounded-full bg-azureSoft flex items-center justify-center text-azure animate-pulse">
           <Bell size={32} strokeWidth={2} />
         </div>
         <h1 className="font-display font-semibold text-4xl text-ink mt-6">Rise and shine!</h1>
@@ -500,7 +500,7 @@ function RingingScreen({ alarm, onResolve }) {
             value={answer}
             onChange={handleChange}
             autoFocus
-            className="w-full rounded-2xl bg-white border-2 border-transparent px-4 py-3 text-center text-lg font-bold text-ink shadow-inner focus:outline-none focus:border-coral transition-colors duration-200"
+            className="w-full rounded-2xl bg-white border-2 border-transparent px-4 py-3 text-center text-lg font-bold text-ink shadow-inner focus:outline-none focus:border-azure transition-colors duration-200"
             placeholder="Your answer"
           />
           {feedback && (
@@ -516,7 +516,7 @@ function RingingScreen({ alarm, onResolve }) {
           )}
           <button
             type="submit"
-            className="focus-ring w-full rounded-full bg-coral text-white font-display font-semibold text-lg py-3.5 mt-4 hover:brightness-105 active:scale-95 transition-all duration-150 shadow-[0_8px_20px_rgba(255,122,89,0.4)]"
+            className="focus-ring w-full rounded-full bg-azure text-white font-display font-semibold text-lg py-3.5 mt-4 hover:brightness-105 active:scale-95 transition-all duration-150 shadow-[0_8px_20px_rgba(47,111,237,0.4)]"
           >
             Submit
           </button>
@@ -592,12 +592,12 @@ function App() {
   const totalStaked = alarms.filter((a) => a.enabled).reduce((sum, a) => sum + a.stake, 0);
 
   const stats = [
-    { label: 'Active', value: String(activeCount), Icon: Clock, tint: 'coral' },
+    { label: 'Active', value: String(activeCount), Icon: Clock, tint: 'azure' },
     { label: 'Staked', value: `$${totalStaked}`, Icon: Wallet, tint: 'red' },
     { label: 'Win rate', value: '86%', Icon: TrendingUp, tint: 'green' }
   ];
   const tintClasses = {
-    coral: 'bg-coralSoft text-coral',
+    azure: 'bg-azureSoft text-azure',
     red: 'bg-redSoft text-red',
     green: 'bg-greenSoft text-green'
   };
@@ -619,20 +619,20 @@ function App() {
       <header className="sticky top-0 z-30 bg-cream/90 backdrop-blur-sm">
         <div className="max-w-5xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-full bg-coral flex items-center justify-center text-white shadow-[0_4px_12px_rgba(255,122,89,0.4)]">
+            <div className="w-10 h-10 rounded-full bg-azure flex items-center justify-center text-white shadow-[0_4px_12px_rgba(47,111,237,0.4)]">
               <Bell size={18} strokeWidth={2.2} />
             </div>
             <span className="font-display font-semibold text-xl text-ink">Stake Alarm</span>
           </div>
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center gap-1.5 rounded-full bg-white px-4 py-2 shadow-[0_4px_14px_rgba(61,44,41,0.08)]">
-              <Flame size={16} className="text-coral" />
+              <Flame size={16} className="text-azure" />
               <span className="tabular font-display font-semibold text-sm text-ink">${balance.toFixed(2)}</span>
             </div>
             <button
               type="button"
               aria-label="Settings"
-              className="focus-ring w-10 h-10 rounded-full bg-white flex items-center justify-center text-ink2 hover:text-coral shadow-[0_4px_14px_rgba(61,44,41,0.08)] transition-colors duration-200 active:scale-90"
+              className="focus-ring w-10 h-10 rounded-full bg-white flex items-center justify-center text-ink2 hover:text-azure shadow-[0_4px_14px_rgba(61,44,41,0.08)] transition-colors duration-200 active:scale-90"
             >
               <Settings size={18} />
             </button>
@@ -641,14 +641,14 @@ function App() {
       </header>
 
       <main className="max-w-5xl mx-auto px-6 py-6">
-        <div className="rounded-[28px] bg-gradient-to-br from-coral to-[#FF9B7A] p-7 text-white shadow-[0_12px_32px_rgba(255,122,89,0.35)]">
+        <div className="rounded-[28px] bg-gradient-to-br from-azure to-[#6FA0FA] p-7 text-white shadow-[0_12px_32px_rgba(47,111,237,0.35)]">
           <p className="text-white/80 font-bold text-sm mb-2">Available to stake</p>
           <p className="font-display tabular text-5xl sm:text-6xl font-semibold">${balance.toFixed(2)}</p>
           <div className="flex flex-wrap items-center gap-4 mt-6">
             <button
               type="button"
               onClick={() => setBalance((b) => b + 50)}
-              className="focus-ring rounded-full bg-white text-coral font-display font-semibold text-sm px-6 py-3 hover:brightness-95 active:scale-95 transition-all duration-150 shadow-lg"
+              className="focus-ring rounded-full bg-white text-azure font-display font-semibold text-sm px-6 py-3 hover:brightness-95 active:scale-95 transition-all duration-150 shadow-lg"
             >
               Deposit funds
             </button>
@@ -674,7 +674,7 @@ function App() {
             <button
               type="button"
               onClick={openAddModal}
-              className="focus-ring flex items-center gap-1.5 rounded-full bg-coral text-white text-xs font-extrabold px-4 py-2.5 hover:brightness-105 active:scale-95 transition-all duration-150 shadow-[0_6px_16px_rgba(255,122,89,0.35)]"
+              className="focus-ring flex items-center gap-1.5 rounded-full bg-azure text-white text-xs font-extrabold px-4 py-2.5 hover:brightness-105 active:scale-95 transition-all duration-150 shadow-[0_6px_16px_rgba(47,111,237,0.35)]"
             >
               <Plus size={13} strokeWidth={2.5} />
               Add alarm
