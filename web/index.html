@@ -81,26 +81,28 @@
   }
 </style>
 
-<div class="min-h-screen bg-cream font-body text-ink overflow-x-hidden">
-  <header class="max-w-5xl mx-auto px-6 h-20 flex items-center justify-between">
-    <div class="flex items-center gap-2.5 logo-badge">
-      <div class="w-10 h-10 rounded-full bg-azure flex items-center justify-center text-white shadow-[0_4px_12px_rgba(47,111,237,0.4)] logo-icon">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-          <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-        </svg>
+<div class="min-h-screen bg-cream font-body text-ink">
+  <header class="sticky top-0 z-30 bg-cream/90 backdrop-blur-sm">
+    <div class="max-w-5xl mx-auto px-6 h-20 flex items-center justify-between">
+      <div class="flex items-center gap-2.5 logo-badge">
+        <div class="w-10 h-10 rounded-full bg-azure flex items-center justify-center text-white shadow-[0_4px_12px_rgba(47,111,237,0.4)] logo-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+          </svg>
+        </div>
+        <span class="font-display font-semibold text-xl text-ink">Stake Alarm</span>
       </div>
-      <span class="font-display font-semibold text-xl text-ink">Stake Alarm</span>
+      <a
+        href="app.html"
+        class="focus-ring rounded-full bg-azure text-white font-display font-semibold text-sm px-5 py-2.5 hover:brightness-105 active:scale-95 transition-all duration-150 shadow-[0_6px_16px_rgba(47,111,237,0.35)]"
+      >
+        Open the app
+      </a>
     </div>
-    <a
-      href="app.html"
-      class="focus-ring rounded-full bg-azure text-white font-display font-semibold text-sm px-5 py-2.5 hover:brightness-105 active:scale-95 transition-all duration-150 shadow-[0_6px_16px_rgba(47,111,237,0.35)]"
-    >
-      Open the app
-    </a>
   </header>
 
-  <main class="max-w-5xl mx-auto px-6">
+  <main class="max-w-5xl mx-auto px-6 overflow-x-hidden">
     <section class="grid md:grid-cols-2 gap-10 items-center py-10 md:py-16">
       <div class="fade-up">
         <h1 class="font-display font-semibold text-5xl sm:text-6xl leading-[1.05] text-ink">
