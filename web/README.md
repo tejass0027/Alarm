@@ -6,27 +6,24 @@ a CDN and compiles the JSX in-page, so no `npm install` or build step is needed.
 
 This is a design concept, not a wired-up app: no backend, no persistence.
 
-## Design direction: split-flap departure board
+## Design direction: playful and rounded
 
-The interface is styled after mechanical airport/train departure boards: every time and
-dollar amount renders as individual flip-tile characters (see the `FlapChar`/`FlapRow`
-components). Alarms are a manifest-style list rather than a card grid, and a disabled
-alarm shows dimmed flap tiles — like a cancelled flight grayed out on a real board.
+Modeled after gamified consumer apps like Duolingo and Headspace rather than a typical
+SaaS dashboard: a warm cream background, a coral gradient hero card, big fully-rounded
+pill buttons and badges, and bouncy `active:scale-95` press feedback throughout. Color
+carries meaning — coral for primary actions, red for anything money-at-risk, green for
+success/win-rate — via the `coral`/`red`/`green` tokens (plus their `*Soft` pastel-tint
+variants) in the `tailwind.config` block at the top of the script.
 
-Currently a light theme: a soft sky-blue board, white flap tiles, and deep blue ink as
-the primary display color (all three color tokens — `board`, `tile`, `accent` — live in
-the `tailwind.config` block at the top of the script, so the palette is a quick swap).
-Red and green are reserved as semantic colors for risk/danger and success, not part of
-the main palette swap.
+Typefaces: **Fredoka** (rounded, friendly, a bit bouncy) for headlines and big numbers,
+paired with **Nunito** (warm, rounded terminals, still readable at small sizes) for body
+text and labels.
 
-Typefaces: **Big Shoulders Display** (bold, condensed, industrial signage character) for
-headlines and flap numerals, paired with **IBM Plex Mono** (technical, manifest/ticket-printout
-feel) for labels and data.
-
-Built in five phases — theme/shell, alarm list, add/edit modal, ringing/challenge screen,
-then a polish pass (entrance animation, keyboard focus rings, `prefers-reduced-motion`
-support) — followed by two full palette changes: first a dark board with amber glow,
-then this light blue version.
+This replaced two earlier full-palette attempts that didn't land: first a dark navy/violet
+SaaS dashboard, then a split-flap departure-board concept (tried in both a dark amber and
+a light blue palette). Each rebuild kept the same underlying React state and interaction
+logic (toggle, add/edit, delete, deposit, the ringing/challenge flow) — only the visual
+layer changed.
 
 Icons are hand-inlined to match the `lucide-react` API (`size`, `strokeWidth`, `className`
 props) so the file runs standalone. Dropping this into a real React project just means

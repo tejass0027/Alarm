@@ -1,5 +1,5 @@
 <title>Stake Alarm</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -8,19 +8,21 @@
     theme: {
       extend: {
         colors: {
-          board: '#E9F1F8',
-          tile: '#FFFFFF',
-          seam: '#C7D9E8',
-          accent: '#1B6FA8',
-          accentDim: '#B7CFE0',
-          risk: '#B23A2E',
-          win: '#4F7A3D',
-          ink2: '#3A4A57',
-          ink3: '#7C8B97'
+          cream: '#FFF8F0',
+          card: '#FFFFFF',
+          coral: '#FF7A59',
+          coralSoft: '#FFE4DB',
+          green: '#3FBE72',
+          greenSoft: '#DFF7E6',
+          red: '#E5484D',
+          redSoft: '#FDE1E1',
+          ink: '#3D2C29',
+          ink2: '#8B7E78',
+          ink3: '#C4B8B0'
         },
         fontFamily: {
-          display: ['"Big Shoulders Display"', 'sans-serif'],
-          mono: ['"IBM Plex Mono"', 'monospace']
+          display: ['Fredoka', 'sans-serif'],
+          body: ['Nunito', 'sans-serif']
         }
       }
     }
@@ -28,25 +30,31 @@
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js"></script>
 <style>
-  body { background: #E9F1F8; }
-  ::selection { background: #1B6FA8; color: #FFFFFF; }
+  body { background: #FFF8F0; }
+  ::selection { background: #FF7A59; color: #FFFFFF; }
   .tabular { font-variant-numeric: tabular-nums; }
   .focus-ring:focus-visible {
-    outline: 2px solid #1B6FA8;
+    outline: 3px solid #FF7A59;
     outline-offset: 2px;
   }
-  @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+  @keyframes popIn {
+    0% { opacity: 0; transform: scale(0.9) translateY(6px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
   }
   @keyframes modalIn {
-    from { opacity: 0; transform: scale(0.96); }
+    from { opacity: 0; transform: scale(0.94); }
     to { opacity: 1; transform: scale(1); }
   }
-  .animate-fade-in-up { animation: fadeInUp 0.35s ease-out both; }
+  @keyframes bounceIn {
+    0% { transform: scale(0.6); opacity: 0; }
+    60% { transform: scale(1.08); opacity: 1; }
+    100% { transform: scale(1); }
+  }
+  .animate-pop-in { animation: popIn 0.3s ease-out both; }
   .animate-modal-in { animation: modalIn 0.2s ease-out both; }
+  .animate-bounce-in { animation: bounceIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
   @media (prefers-reduced-motion: reduce) {
-    .animate-fade-in-up, .animate-modal-in, .animate-pulse {
+    .animate-pop-in, .animate-modal-in, .animate-bounce-in, .animate-pulse {
       animation: none !important;
     }
   }
@@ -61,9 +69,9 @@ const { useState } = React;
   Icons below are hand-inlined to match the lucide-react API (size / strokeWidth /
   className props, 24x24 stroke paths) so this file runs standalone with no build
   step. In a real project, delete this block and use:
-  import { Bell, Settings, Clock, Wallet, TrendingUp, Pencil, Trash2, X, Plus, AlertTriangle } from 'lucide-react';
+  import { Bell, Settings, Clock, Wallet, TrendingUp, Pencil, Trash2, X, Plus, AlertTriangle, Flame, Check } from 'lucide-react';
 */
-function Icon({ children, size = 20, strokeWidth = 1.8, className = '', ...rest }) {
+function Icon({ children, size = 20, strokeWidth = 2, className = '', ...rest }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -147,43 +155,16 @@ const AlertTriangle = (p) => (
     <line x1="12" y1="17" x2="12.01" y2="17" />
   </Icon>
 );
-
-/* The core visual signature: every number on the board renders as individual
-   mechanical flap characters, like a real split-flap departure display. */
-function FlapChar({ char, size = 'md', dim = false }) {
-  if (char === ' ') return <span className="inline-block w-2" aria-hidden="true" />;
-  if (!/[A-Za-z0-9]/.test(char)) {
-    const punctSize = size === 'lg' ? 'text-3xl px-0.5' : size === 'sm' ? 'text-sm px-0.5' : 'text-lg px-0.5';
-    return <span className={`font-display font-black text-accent/60 ${punctSize}`}>{char}</span>;
-  }
-  const sizing =
-    size === 'lg'
-      ? 'text-3xl w-10 h-12'
-      : size === 'sm'
-      ? 'text-sm w-5 h-6'
-      : 'text-lg w-7 h-9';
-  return (
-    <span
-      className={`relative inline-flex items-center justify-center rounded-[3px] bg-tile font-display font-black leading-none ${sizing} ${
-        dim ? 'text-accentDim' : 'text-accent'
-      }`}
-      style={{ boxShadow: 'inset 0 -3px 0 rgba(0,0,0,0.10), inset 0 1px 0 rgba(0,0,0,0.05)' }}
-    >
-      {char}
-      <span className="absolute left-0 right-0 top-1/2 h-px bg-seam/80 -translate-y-px pointer-events-none" />
-    </span>
-  );
-}
-
-function FlapRow({ text, size = 'md', dim = false }) {
-  return (
-    <span className="inline-flex items-center gap-[3px]" aria-label={text}>
-      {text.split('').map((c, i) => (
-        <FlapChar key={i} char={c} size={size} dim={dim} />
-      ))}
-    </span>
-  );
-}
+const Flame = (p) => (
+  <Icon {...p}>
+    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+  </Icon>
+);
+const Check = (p) => (
+  <Icon {...p}>
+    <polyline points="20 6 9 17 4 12" />
+  </Icon>
+);
 
 const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 const CHALLENGE_TYPES = [
@@ -221,90 +202,85 @@ function generateChallenge(type) {
   };
 }
 
-function AlarmRow({ alarm, onToggle, onDelete, onEdit, onRing, style }) {
+function AlarmCard({ alarm, onToggle, onDelete, onEdit, onRing, style }) {
   const hasRepeat = alarm.days.length > 0;
   return (
     <div
       style={style}
-      className={`animate-fade-in-up flex flex-col sm:flex-row sm:items-center gap-4 border-b border-tile py-5 transition-opacity duration-200 ${
-        alarm.enabled ? '' : 'opacity-50'
+      className={`animate-pop-in rounded-3xl bg-card p-5 shadow-[0_6px_20px_rgba(61,44,41,0.08)] hover:shadow-[0_10px_28px_rgba(61,44,41,0.14)] hover:-translate-y-0.5 transition-all duration-200 ${
+        alarm.enabled ? '' : 'opacity-60'
       }`}
     >
-      <div className="shrink-0">
-        <FlapRow text={alarm.time} size="lg" dim={!alarm.enabled} />
-      </div>
-
-      <div className="flex-1 min-w-0">
-        <p className="font-mono text-sm text-ink2 uppercase tracking-wide truncate">
-          {alarm.label || 'Unlabeled'}
-        </p>
-        <div className="flex items-center gap-1.5 mt-2">
-          {hasRepeat ? (
-            DAY_LABELS.map((d, i) => (
-              <span
-                key={i}
-                className={`w-4 h-4 rounded-sm flex items-center justify-center text-[9px] font-mono font-bold ${
-                  alarm.days.includes(i) ? 'bg-accent/20 text-accent' : 'bg-tile text-ink3'
-                }`}
-              >
-                {d}
-              </span>
-            ))
-          ) : (
-            <span className="font-mono text-[10px] text-ink3 uppercase tracking-widest">One-time</span>
-          )}
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="font-display tabular text-4xl font-semibold text-ink">{alarm.time}</p>
+          <p className="text-ink2 text-sm font-semibold mt-1">{alarm.label || 'Unlabeled'}</p>
         </div>
-      </div>
-
-      <div className="flex items-center gap-6 shrink-0">
-        <div className="text-right">
-          <p className="font-mono text-[10px] text-ink3 uppercase tracking-widest mb-1">Stake</p>
-          <FlapRow text={`$${alarm.stake}`} size="sm" />
-        </div>
-
         <button
           type="button"
           role="switch"
           aria-checked={alarm.enabled}
           aria-label={alarm.enabled ? 'Disable alarm' : 'Enable alarm'}
           onClick={() => onToggle(alarm.id)}
-          className={`focus-ring w-11 h-6 rounded-full border transition-colors duration-200 relative shrink-0 ${
-            alarm.enabled ? 'bg-accent border-accent' : 'bg-tile border-seam'
+          className={`focus-ring w-12 h-7 rounded-full transition-colors duration-200 relative shrink-0 active:scale-95 ${
+            alarm.enabled ? 'bg-coral' : 'bg-ink3/40'
           }`}
         >
           <span
-            className={`absolute top-0.5 left-0.5 w-[18px] h-[18px] rounded-full bg-board transition-transform duration-200 ${
-              alarm.enabled ? 'translate-x-[22px]' : 'translate-x-0'
+            className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ${
+              alarm.enabled ? 'translate-x-5' : 'translate-x-0'
             }`}
           />
         </button>
+      </div>
 
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            aria-label="Preview ring"
-            onClick={onRing}
-            className="focus-ring w-8 h-8 rounded flex items-center justify-center text-ink3 hover:text-accent hover:bg-tile transition-colors duration-200"
-          >
-            <Bell size={15} />
-          </button>
-          <button
-            type="button"
-            aria-label="Edit alarm"
-            onClick={onEdit}
-            className="focus-ring w-8 h-8 rounded flex items-center justify-center text-ink3 hover:text-accent hover:bg-tile transition-colors duration-200"
-          >
-            <Pencil size={15} />
-          </button>
-          <button
-            type="button"
-            aria-label="Delete alarm"
-            onClick={() => onDelete(alarm.id)}
-            className="focus-ring w-8 h-8 rounded flex items-center justify-center text-ink3 hover:text-risk hover:bg-tile transition-colors duration-200"
-          >
-            <Trash2 size={15} />
-          </button>
-        </div>
+      <div className="flex flex-wrap items-center gap-2 mt-4">
+        <span className="rounded-full bg-redSoft text-red px-3 py-1.5 text-xs font-extrabold">
+          ${alarm.stake} at stake
+        </span>
+        {hasRepeat ? (
+          <div className="flex items-center gap-1">
+            {DAY_LABELS.map((d, i) => (
+              <span
+                key={i}
+                className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-extrabold ${
+                  alarm.days.includes(i) ? 'bg-coralSoft text-coral' : 'bg-cream text-ink3'
+                }`}
+              >
+                {d}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <span className="rounded-full bg-cream text-ink3 px-3 py-1.5 text-xs font-bold">One-time</span>
+        )}
+      </div>
+
+      <div className="flex items-center gap-1.5 mt-4 pt-4 border-t-2 border-cream">
+        <button
+          type="button"
+          aria-label="Preview ring"
+          onClick={onRing}
+          className="focus-ring w-9 h-9 rounded-full flex items-center justify-center text-ink2 bg-cream hover:bg-coralSoft hover:text-coral transition-colors duration-200 active:scale-90"
+        >
+          <Bell size={15} />
+        </button>
+        <button
+          type="button"
+          aria-label="Edit alarm"
+          onClick={onEdit}
+          className="focus-ring w-9 h-9 rounded-full flex items-center justify-center text-ink2 bg-cream hover:bg-coralSoft hover:text-coral transition-colors duration-200 active:scale-90"
+        >
+          <Pencil size={15} />
+        </button>
+        <button
+          type="button"
+          aria-label="Delete alarm"
+          onClick={() => onDelete(alarm.id)}
+          className="focus-ring w-9 h-9 rounded-full flex items-center justify-center text-ink2 bg-cream hover:bg-redSoft hover:text-red transition-colors duration-200 active:scale-90"
+        >
+          <Trash2 size={15} />
+        </button>
       </div>
     </div>
   );
@@ -345,97 +321,94 @@ function AlarmModal({ existing, onClose, onSave }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 backdrop-blur-sm p-4"
       onClick={onClose}
     >
       <div
-        className="animate-modal-in w-full max-w-md rounded-lg border-2 border-tile bg-board p-6"
+        className="animate-modal-in w-full max-w-md rounded-[28px] bg-card p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-5 pb-4 border-b border-tile">
-          <h3 className="font-display font-black text-base tracking-wide text-accent uppercase">
-            {existing ? 'Edit entry' : 'New entry'}
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="font-display font-semibold text-xl text-ink">
+            {existing ? 'Edit alarm' : 'New alarm'}
           </h3>
           <button
             type="button"
             aria-label="Close"
             onClick={onClose}
-            className="focus-ring w-8 h-8 rounded flex items-center justify-center text-ink3 hover:text-accent hover:bg-tile transition-colors duration-200"
+            className="focus-ring w-9 h-9 rounded-full flex items-center justify-center text-ink2 bg-cream hover:bg-redSoft hover:text-red transition-colors duration-200 active:scale-90"
           >
             <X size={16} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 font-mono">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 font-body">
           <div className="flex gap-3">
             <label className="flex-1">
-              <span className="block text-[10px] text-ink3 uppercase tracking-widest mb-1.5">Time</span>
+              <span className="block text-xs text-ink2 font-bold uppercase tracking-wide mb-1.5">Time</span>
               <input
                 type="time"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-                style={{ colorScheme: 'light' }}
-                className="w-full rounded bg-tile border border-tile px-3 py-2 text-sm text-accent focus:outline-none focus:border-accent transition-colors duration-200"
+                className="w-full rounded-2xl bg-cream border-2 border-transparent px-4 py-2.5 text-sm font-bold text-ink focus:outline-none focus:border-coral transition-colors duration-200"
               />
             </label>
             <label className="flex-1">
-              <span className="block text-[10px] text-ink3 uppercase tracking-widest mb-1.5">Stake</span>
+              <span className="block text-xs text-ink2 font-bold uppercase tracking-wide mb-1.5">Stake</span>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink3 text-sm">$</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-ink3 text-sm font-bold">$</span>
                 <input
                   type="number"
                   min="1"
                   step="1"
                   value={stake}
                   onChange={(e) => setStake(e.target.value)}
-                  className="w-full rounded bg-tile border border-tile pl-6 pr-3 py-2 text-sm text-risk focus:outline-none focus:border-accent transition-colors duration-200"
+                  className="w-full rounded-2xl bg-cream border-2 border-transparent pl-7 pr-4 py-2.5 text-sm font-bold text-red focus:outline-none focus:border-coral transition-colors duration-200"
                 />
               </div>
             </label>
           </div>
 
           <label>
-            <span className="block text-[10px] text-ink3 uppercase tracking-widest mb-1.5">Label</span>
+            <span className="block text-xs text-ink2 font-bold uppercase tracking-wide mb-1.5">Label</span>
             <input
               type="text"
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               placeholder="Gym before work"
-              className="w-full rounded bg-tile border border-tile px-3 py-2 text-sm text-ink2 placeholder:text-ink3/60 focus:outline-none focus:border-accent transition-colors duration-200"
+              className="w-full rounded-2xl bg-cream border-2 border-transparent px-4 py-2.5 text-sm font-bold text-ink placeholder:text-ink3 placeholder:font-normal focus:outline-none focus:border-coral transition-colors duration-200"
             />
           </label>
 
           <div>
-            <span className="block text-[10px] text-ink3 uppercase tracking-widest mb-1.5">Repeat on</span>
+            <span className="block text-xs text-ink2 font-bold uppercase tracking-wide mb-1.5">Repeat on</span>
             <div className="flex items-center gap-1.5">
               {DAY_LABELS.map((d, i) => (
                 <button
                   key={i}
                   type="button"
                   onClick={() => toggleDay(i)}
-                  className={`focus-ring w-8 h-8 rounded text-xs font-bold transition-colors duration-200 ${
-                    days.includes(i) ? 'bg-accent text-board' : 'bg-tile text-ink3 hover:text-ink2'
+                  className={`focus-ring w-9 h-9 rounded-full text-xs font-extrabold transition-all duration-150 active:scale-90 ${
+                    days.includes(i) ? 'bg-coral text-white' : 'bg-cream text-ink3 hover:text-ink2'
                   }`}
                 >
                   {d}
                 </button>
               ))}
             </div>
-            <p className="text-ink3 text-[11px] mt-1.5">Leave all unselected for a one-time alarm.</p>
+            <p className="text-ink3 text-[11px] font-semibold mt-1.5">Leave all unselected for a one-time alarm.</p>
           </div>
 
           <div>
-            <span className="block text-[10px] text-ink3 uppercase tracking-widest mb-1.5">Challenge</span>
+            <span className="block text-xs text-ink2 font-bold uppercase tracking-wide mb-1.5">Challenge</span>
             <div className="grid grid-cols-3 gap-1.5">
               {CHALLENGE_TYPES.map((c) => (
                 <button
                   key={c.value}
                   type="button"
                   onClick={() => setChallengeType(c.value)}
-                  className={`focus-ring rounded py-1.5 text-xs font-semibold uppercase tracking-wide transition-colors duration-200 border ${
-                    challengeType === c.value
-                      ? 'bg-accent/20 text-accent border-accent/50'
-                      : 'bg-tile text-ink3 border-transparent hover:text-ink2'
+                  className={`focus-ring rounded-full py-2 text-xs font-extrabold transition-all duration-150 active:scale-95 ${
+                    challengeType === c.value ? 'bg-coral text-white' : 'bg-cream text-ink3 hover:text-ink2'
                   }`}
                 >
                   {c.label}
@@ -444,19 +417,19 @@ function AlarmModal({ existing, onClose, onSave }) {
             </div>
           </div>
 
-          {error && <p className="text-risk text-xs">{error}</p>}
+          {error && <p className="text-red text-xs font-bold">{error}</p>}
 
           <div className="flex items-center gap-2 mt-2">
             <button
               type="submit"
-              className="focus-ring flex-1 rounded bg-accent text-board font-display font-black text-sm uppercase tracking-wide py-2.5 hover:bg-accent/90 hover:scale-105 transition-all duration-200"
+              className="focus-ring flex-1 rounded-full bg-coral text-white font-display font-semibold text-base py-3 hover:brightness-105 active:scale-95 transition-all duration-150 shadow-[0_6px_16px_rgba(255,122,89,0.4)]"
             >
               Save alarm
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="focus-ring rounded border border-tile text-ink2 font-medium text-sm px-5 py-2.5 hover:text-accent hover:border-accent/40 transition-colors duration-200"
+              className="focus-ring rounded-full bg-cream text-ink2 font-bold text-sm px-5 py-3 hover:bg-ink3/20 active:scale-95 transition-all duration-150"
             >
               Cancel
             </button>
@@ -483,7 +456,7 @@ function RingingScreen({ alarm, onResolve }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!answer.trim()) {
-      setFeedback({ type: 'error', text: 'Enter an answer first.' });
+      setFeedback({ type: 'error', text: 'Enter an answer first!' });
       return;
     }
     if (challenge.check(answer)) {
@@ -491,35 +464,34 @@ function RingingScreen({ alarm, onResolve }) {
         onResolve('solved');
         return;
       }
-      setFeedback({ type: 'success', text: 'Correct — next one.' });
+      setFeedback({ type: 'success', text: 'Nice! One more to go.' });
       setRound((r) => r + 1);
       setChallenge(generateChallenge(alarm.challengeType));
       setAnswer('');
     } else {
-      setFeedback({ type: 'error', text: 'Not quite — try again.' });
+      setFeedback({ type: 'error', text: 'Not quite, try again!' });
       setAnswer('');
     }
   };
 
   return (
-    <div className="min-h-screen bg-board font-mono text-ink2 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-cream font-body text-ink flex items-center justify-center p-6">
       <div className="w-full max-w-sm text-center">
-        <div className="mx-auto w-16 h-16 rounded-full bg-risk/15 border-2 border-risk flex items-center justify-center text-risk animate-pulse">
-          <Bell size={26} strokeWidth={1.8} />
+        <div className="mx-auto w-20 h-20 rounded-full bg-coralSoft flex items-center justify-center text-coral animate-pulse">
+          <Bell size={32} strokeWidth={2} />
         </div>
-        <h1 className="font-display font-black text-3xl uppercase tracking-wide text-accent mt-6">Wake up</h1>
-        <p className="text-ink3 text-sm mt-2">{alarm.label || 'Alarm'}</p>
+        <h1 className="font-display font-semibold text-4xl text-ink mt-6">Rise and shine!</h1>
+        <p className="text-ink2 font-bold text-sm mt-2">{alarm.label || 'Alarm'}</p>
 
-        <div className="inline-flex items-center gap-2 border-2 border-risk rounded px-4 py-1.5 mt-4">
-          <AlertTriangle size={14} className="text-risk" />
-          <FlapRow text={`$${alarm.stake}`} size="sm" />
-          <span className="text-risk text-xs uppercase tracking-wide">at stake</span>
+        <div className="inline-flex items-center gap-2 bg-redSoft rounded-full px-4 py-2 mt-4">
+          <AlertTriangle size={14} className="text-red" />
+          <span className="text-red text-sm font-extrabold">${alarm.stake} at stake</span>
         </div>
 
-        <p className="text-ink3 text-[11px] mt-8 uppercase tracking-[0.2em]">
+        <p className="text-ink3 text-xs font-bold mt-8 uppercase tracking-wide">
           Round {round} of {rounds}
         </p>
-        <p className="font-display font-bold text-xl mt-3 whitespace-pre-line text-ink2">{challenge.prompt}</p>
+        <p className="font-display font-semibold text-2xl mt-3 whitespace-pre-line text-ink">{challenge.prompt}</p>
 
         <form onSubmit={handleSubmit} className="mt-5">
           <input
@@ -527,21 +499,23 @@ function RingingScreen({ alarm, onResolve }) {
             value={answer}
             onChange={handleChange}
             autoFocus
-            className="w-full rounded bg-tile border-2 border-tile px-4 py-2.5 text-center text-accent font-mono focus:outline-none focus:border-accent transition-colors duration-200"
+            className="w-full rounded-2xl bg-white border-2 border-transparent px-4 py-3 text-center text-lg font-bold text-ink shadow-inner focus:outline-none focus:border-coral transition-colors duration-200"
             placeholder="Your answer"
           />
           {feedback && (
             <p
-              className={`text-xs mt-2 uppercase tracking-wide ${
-                feedback.type === 'success' ? 'text-win' : 'text-risk'
+              key={feedback.text}
+              className={`animate-bounce-in text-sm font-extrabold mt-3 ${
+                feedback.type === 'success' ? 'text-green' : 'text-red'
               }`}
             >
+              {feedback.type === 'success' && <Check size={14} className="inline mr-1 -mt-0.5" />}
               {feedback.text}
             </p>
           )}
           <button
             type="submit"
-            className="focus-ring w-full rounded bg-accent text-board font-display font-black uppercase tracking-wide text-sm py-2.5 mt-4 hover:bg-accent/90 hover:scale-105 transition-all duration-200"
+            className="focus-ring w-full rounded-full bg-coral text-white font-display font-semibold text-lg py-3.5 mt-4 hover:brightness-105 active:scale-95 transition-all duration-150 shadow-[0_8px_20px_rgba(255,122,89,0.4)]"
           >
             Submit
           </button>
@@ -553,14 +527,14 @@ function RingingScreen({ alarm, onResolve }) {
               <button
                 type="button"
                 onClick={() => onResolve('gave_up')}
-                className="focus-ring rounded bg-risk text-board text-xs font-bold uppercase px-4 py-2 hover:scale-105 transition-all duration-200"
+                className="focus-ring rounded-full bg-red text-white text-xs font-extrabold px-5 py-2.5 active:scale-95 transition-all duration-150"
               >
                 Confirm — lose ${alarm.stake}
               </button>
               <button
                 type="button"
                 onClick={() => setConfirmingGiveUp(false)}
-                className="focus-ring text-ink3 text-xs hover:text-ink2 transition-colors duration-200"
+                className="focus-ring text-ink3 text-xs font-bold hover:text-ink2 transition-colors duration-200"
               >
                 Cancel
               </button>
@@ -569,7 +543,7 @@ function RingingScreen({ alarm, onResolve }) {
             <button
               type="button"
               onClick={() => setConfirmingGiveUp(true)}
-              className="focus-ring text-risk/80 text-xs uppercase tracking-wide hover:text-risk transition-colors duration-200"
+              className="focus-ring text-ink3 text-xs font-bold uppercase tracking-wide hover:text-red transition-colors duration-200"
             >
               Give up (lose stake)
             </button>
@@ -617,10 +591,15 @@ function App() {
   const totalStaked = alarms.filter((a) => a.enabled).reduce((sum, a) => sum + a.stake, 0);
 
   const stats = [
-    { label: 'Active', value: String(activeCount), Icon: Clock },
-    { label: 'Staked', value: `$${totalStaked}`, Icon: Wallet },
-    { label: 'Win rate', value: '86%', Icon: TrendingUp }
+    { label: 'Active', value: String(activeCount), Icon: Clock, tint: 'coral' },
+    { label: 'Staked', value: `$${totalStaked}`, Icon: Wallet, tint: 'red' },
+    { label: 'Win rate', value: '86%', Icon: TrendingUp, tint: 'green' }
   ];
+  const tintClasses = {
+    coral: 'bg-coralSoft text-coral',
+    red: 'bg-redSoft text-red',
+    green: 'bg-greenSoft text-green'
+  };
 
   const [ringingAlarm, setRingingAlarm] = useState(null);
   const resolveRing = (result) => {
@@ -635,81 +614,77 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-board font-mono text-ink2">
-      <header className="border-b-2 border-accent/25">
-        <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded bg-tile border border-accent/30 flex items-center justify-center text-accent">
-              <Bell size={16} strokeWidth={2} />
+    <div className="min-h-screen bg-cream font-body text-ink">
+      <header className="sticky top-0 z-30 bg-cream/90 backdrop-blur-sm">
+        <div className="max-w-5xl mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-full bg-coral flex items-center justify-center text-white shadow-[0_4px_12px_rgba(255,122,89,0.4)]">
+              <Bell size={18} strokeWidth={2.2} />
             </div>
-            <span className="font-display font-black text-lg tracking-wide text-accent uppercase">
-              Stake Alarm
-            </span>
+            <span className="font-display font-semibold text-xl text-ink">Stake Alarm</span>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:block text-right">
-              <p className="text-[10px] text-ink3 uppercase tracking-widest mb-1">Balance</p>
-              <FlapRow text={`$${balance.toFixed(2)}`} size="sm" />
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:flex items-center gap-1.5 rounded-full bg-white px-4 py-2 shadow-[0_4px_14px_rgba(61,44,41,0.08)]">
+              <Flame size={16} className="text-coral" />
+              <span className="tabular font-display font-semibold text-sm text-ink">${balance.toFixed(2)}</span>
             </div>
             <button
               type="button"
               aria-label="Settings"
-              className="focus-ring w-9 h-9 rounded border border-tile flex items-center justify-center text-ink3 hover:text-accent hover:border-accent/40 transition-colors duration-200"
+              className="focus-ring w-10 h-10 rounded-full bg-white flex items-center justify-center text-ink2 hover:text-coral shadow-[0_4px_14px_rgba(61,44,41,0.08)] transition-colors duration-200 active:scale-90"
             >
-              <Settings size={17} />
+              <Settings size={18} />
             </button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-6 py-10">
-        <div className="border-2 border-tile rounded-lg p-7">
-          <p className="text-[11px] text-ink3 uppercase tracking-widest mb-4">Available to stake</p>
-          <FlapRow text={`$${balance.toFixed(2)}`} size="lg" />
+      <main className="max-w-5xl mx-auto px-6 py-6">
+        <div className="rounded-[28px] bg-gradient-to-br from-coral to-[#FF9B7A] p-7 text-white shadow-[0_12px_32px_rgba(255,122,89,0.35)]">
+          <p className="text-white/80 font-bold text-sm mb-2">Available to stake</p>
+          <p className="font-display tabular text-5xl sm:text-6xl font-semibold">${balance.toFixed(2)}</p>
           <div className="flex flex-wrap items-center gap-4 mt-6">
             <button
               type="button"
               onClick={() => setBalance((b) => b + 50)}
-              className="focus-ring rounded bg-accent text-board font-display font-black text-sm uppercase tracking-wide px-5 py-2.5 hover:bg-accent/90 hover:scale-105 transition-all duration-200"
+              className="focus-ring rounded-full bg-white text-coral font-display font-semibold text-sm px-6 py-3 hover:brightness-95 active:scale-95 transition-all duration-150 shadow-lg"
             >
               Deposit funds
             </button>
-            <span className="text-ink3 text-xs">Virtual balance — no real money moves</span>
+            <span className="text-white/80 text-xs font-bold">Virtual balance — no real money moves</span>
           </div>
         </div>
 
         <div className="grid grid-cols-3 gap-3 mt-4">
-          {stats.map(({ label, value, Icon: StatIcon }) => (
-            <div key={label} className="border border-tile rounded-lg px-4 py-3.5">
-              <div className="flex items-center gap-1.5 text-ink3 mb-2">
-                <StatIcon size={13} />
-                <span className="text-[10px] uppercase tracking-widest">{label}</span>
+          {stats.map(({ label, value, Icon: StatIcon, tint }) => (
+            <div key={label} className="rounded-3xl bg-white px-4 py-4 shadow-[0_4px_14px_rgba(61,44,41,0.08)]">
+              <div className={`w-9 h-9 rounded-full flex items-center justify-center mb-2 ${tintClasses[tint]}`}>
+                <StatIcon size={16} />
               </div>
-              <p className="font-display font-black text-2xl text-accent tabular">{value}</p>
+              <p className="font-display tabular text-2xl font-semibold text-ink">{value}</p>
+              <p className="text-ink3 text-[11px] font-bold uppercase tracking-wide">{label}</p>
             </div>
           ))}
         </div>
 
-        <div className="mt-10">
-          <div className="flex items-center justify-between border-b-2 border-accent/25 pb-3">
-            <h2 className="font-display font-black text-sm tracking-[0.2em] text-ink2 uppercase">
-              Alarms · Manifest
-            </h2>
+        <div className="mt-8">
+          <div className="flex items-center justify-between">
+            <h2 className="font-display font-semibold text-xl text-ink">Your alarms</h2>
             <button
               type="button"
               onClick={openAddModal}
-              className="focus-ring flex items-center gap-1.5 rounded bg-accent/15 border border-accent/40 text-accent text-xs font-mono font-semibold uppercase tracking-wide px-3.5 py-1.5 hover:bg-accent/25 hover:scale-105 transition-all duration-200"
+              className="focus-ring flex items-center gap-1.5 rounded-full bg-coral text-white text-xs font-extrabold px-4 py-2.5 hover:brightness-105 active:scale-95 transition-all duration-150 shadow-[0_6px_16px_rgba(255,122,89,0.35)]"
             >
-              <Plus size={13} strokeWidth={2.2} />
+              <Plus size={13} strokeWidth={2.5} />
               Add alarm
             </button>
           </div>
           {alarms.length === 0 ? (
-            <p className="text-ink3 text-sm mt-6">No alarms yet — add your first one.</p>
+            <p className="text-ink3 font-semibold text-sm mt-6">No alarms yet — add your first one!</p>
           ) : (
-            <div>
+            <div className="grid sm:grid-cols-2 gap-4 mt-4">
               {alarms.map((alarm, i) => (
-                <AlarmRow
+                <AlarmCard
                   key={alarm.id}
                   alarm={alarm}
                   style={{ animationDelay: `${i * 60}ms` }}
