@@ -623,8 +623,12 @@ function App() {
   };
 
   const canWithdraw = streak >= STREAK_GOAL;
+  const [lockedNoticeKey, setLockedNoticeKey] = useState(0);
   const withdraw = () => {
-    if (!canWithdraw) return;
+    if (!canWithdraw) {
+      setLockedNoticeKey((k) => k + 1);
+      return;
+    }
     setBalance((b) => Math.max(0, b - 50));
   };
 
@@ -695,12 +699,11 @@ function App() {
             <button
               type="button"
               onClick={withdraw}
-              disabled={!canWithdraw}
               aria-disabled={!canWithdraw}
-              className={`focus-ring rounded-full font-display font-semibold text-sm px-6 py-3 transition-all duration-150 flex items-center gap-1.5 ${
+              className={`focus-ring rounded-full font-display font-semibold text-sm px-6 py-3 transition-all duration-150 flex items-center gap-1.5 active:scale-95 ${
                 canWithdraw
-                  ? 'bg-white/90 text-azure hover:brightness-95 active:scale-95 shadow-lg'
-                  : 'bg-white/15 text-white/60 cursor-not-allowed'
+                  ? 'bg-white/90 text-azure hover:brightness-95 shadow-lg'
+                  : 'bg-white/15 text-white/60 hover:bg-white/20'
               }`}
             >
               {!canWithdraw && <Lock size={13} />}
@@ -708,11 +711,21 @@ function App() {
             </button>
           </div>
           <p className="text-white/70 text-xs font-bold mt-3">Virtual balance — no real money moves.</p>
-          <p className="text-white/70 text-xs font-bold mt-1">
-            {canWithdraw
-              ? 'Withdrawals unlocked — cash out anytime.'
-              : `Reach a ${STREAK_GOAL}-day streak to unlock withdrawals.`}
-          </p>
+          {canWithdraw ? (
+            <p className="text-white/70 text-xs font-bold mt-1">Withdrawals unlocked — cash out anytime.</p>
+          ) : lockedNoticeKey > 0 ? (
+            <p
+              key={lockedNoticeKey}
+              className="animate-bounce-in inline-flex items-center gap-1.5 bg-white/25 rounded-full px-3 py-1.5 text-xs font-extrabold mt-2"
+            >
+              <Lock size={12} />
+              Complete a {STREAK_GOAL}-day streak to withdraw your money.
+            </p>
+          ) : (
+            <p className="text-white/70 text-xs font-bold mt-1">
+              Reach a {STREAK_GOAL}-day streak to unlock withdrawals.
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-3 gap-3 mt-4">
