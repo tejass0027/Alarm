@@ -54,3 +54,7 @@ rounded, playful interface (think Duolingo or Headspace) with alarm cards
 you can add/edit/delete/toggle. A "Preview" button per card triggers the
 full-screen ringing/challenge view, since there's no real scheduling behind
 it — it's a visual and interaction mockup, not a persisted, wired-up app.
+
+It also models a real product rule: solving an alarm builds a streak, giving
+up resets it, and withdrawing your balance is locked until you reach a
+21-day streak — so a balance alone doesn't let you cash out.

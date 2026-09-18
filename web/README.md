@@ -31,3 +31,11 @@ the visual layer changed.
 Icons are hand-inlined to match the `lucide-react` API (`size`, `strokeWidth`, `className`
 props) so the file runs standalone. Dropping this into a real React project just means
 deleting the icon block at the top of the script and importing from `lucide-react` instead.
+
+## Streak-gated withdrawals
+
+Solving an alarm's challenge increments a streak counter; giving up resets it to zero.
+The hero card's "Withdraw funds" button stays locked (shown with a lock icon) until the
+streak reaches `STREAK_GOAL` (21), with a progress bar tracking how close you are. This
+mirrors the real product idea: staying disciplined for 21 days in a row is what earns
+access to cash out, not just having a balance.
